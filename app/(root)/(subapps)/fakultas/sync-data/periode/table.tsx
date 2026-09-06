@@ -11,6 +11,7 @@ import {
   Edit,
   MoreHorizontal,
   RefreshCcw,
+  ToggleRight,
 } from "lucide-react";
 import { DataTable } from "@/components/data-table";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -49,6 +50,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -83,6 +85,7 @@ const editPeriodeSchema = z
     tgl_akhir_ta: z.date({ required_error: "Tanggal akhir TA harus diisi" }),
     tgl_awal_bk: z.date({ required_error: "Tanggal mulai BK harus diisi" }),
     tgl_akhir_bk: z.date({ required_error: "Tanggal akhir BK harus diisi" }),
+    status: z.boolean(),
   })
   .refine((data) => data.tgl_awal < data.tgl_akhir, {
     message: "Tanggal mulai harus lebih awal dari tanggal akhir",
@@ -125,6 +128,7 @@ const EditPeriodeModal = ({
       tgl_akhir_ta: undefined,
       tgl_awal_bk: undefined,
       tgl_akhir_bk: undefined,
+      status: true,
     },
   });
 
@@ -137,6 +141,7 @@ const EditPeriodeModal = ({
         tgl_akhir_ta: periode.tgl_akhir_ta ? new Date(periode.tgl_akhir_ta) : undefined,
         tgl_awal_bk: periode.tgl_awal_bk ? new Date(periode.tgl_awal_bk) : undefined,
         tgl_akhir_bk: periode.tgl_akhir_bk ? new Date(periode.tgl_akhir_bk) : undefined,
+        status: periode.status === 1 || periode.status === true,
       });
     }
   }, [periode, form]);
@@ -153,6 +158,7 @@ const EditPeriodeModal = ({
         tgl_akhir_ta: formatDateToString(data.tgl_akhir_ta),
         tgl_awal_bk: formatDateToString(data.tgl_awal_bk),
         tgl_akhir_bk: formatDateToString(data.tgl_akhir_bk),
+        status: data.status ? 1 : 0,
       });
 
       handleToastResponse(res);
@@ -443,6 +449,30 @@ const EditPeriodeModal = ({
               </div>
             </div>
 
+            <div className="border-t pt-4">
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Status Aktif</FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        {field.value ? "Periode sedang aktif" : "Periode tidak aktif"}
+                      </p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isLoading}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
                 Batal
@@ -497,6 +527,16 @@ export default function TableSyncPeriode() {
 
   const handleEditSuccess = () => {
     mutate(mutateKey);
+  };
+
+  const handleChangeStatus = async (periode: Periode) => {
+    try {
+      const res = await PeriodeFakultasService.changeStatus(periode.id);
+      handleToastResponse(res);
+      mutate(mutateKey);
+    } catch {
+      toast.error("Gagal mengubah status periode");
+    }
   };
 
   const mutateKey = ["periode-list", page, limit, search, filter_status];
@@ -624,6 +664,10 @@ export default function TableSyncPeriode() {
               <DropdownMenuItem onClick={() => handleEdit(periode)}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Periode
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleChangeStatus(periode)}>
+                <ToggleRight className="mr-2 h-4 w-4" />
+                {periode.status === 1 || periode.status === true ? "Nonaktifkan" : "Aktifkan"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
