@@ -1,0 +1,81 @@
+name: Build & Deploy STI-FE
+
+on:
+  push:
+    branches:
+      - staging
+      - production
+      - multi-prodi
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Create .env file
+        run: |
+          if [ "${GITHUB_REF}" = "refs/heads/staging" ]; then
+            echo "${{ secrets.ENV_STAGING }}" > .env
+          elif [ "${GITHUB_REF}" = "refs/heads/multi-prodi" ]; then
+            echo "${{ secrets.ENV_MULTI }}" > .env
+          else
+            echo "${{ secrets.ENV_PRODUCTION }}" > .env
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Create build package
+        run: tar -czf build.tar.gz .next public package.json node_modules .env
+
+      - name: Upload build package
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ github.ref == 'refs/heads/multi-prodi' && secrets.SERVER_IP_MULTI || secrets.SERVER_IP }}
+          username: ${{ github.ref == 'refs/heads/multi-prodi' && secrets.SSH_USER_MULTI || secrets.SSH_USER }}
+          key: ${{ github.ref == 'refs/heads/multi-prodi' && secrets.SSH_KEY_MULTI || secrets.SSH_KEY }}
+          port: ${{ github.ref == 'refs/heads/multi-prodi' && secrets.SSH_PORT_MULTI || '22' }}
+          source: "build.tar.gz"
+          target: >
+            ${{ github.ref == 'refs/heads/staging' && '/var/www/sti-staging' ||
+                github.ref == 'refs/heads/multi-prodi' && '/home/topfik/sti-fe' ||
+                '/var/www/sti-fe' }}
+
+      - name: Extract and restart on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ github.ref == 'refs/heads/multi-prodi' && secrets.SERVER_IP_MULTI || secrets.SERVER_IP }}
+          username: ${{ github.ref == 'refs/heads/multi-prodi' && secrets.SSH_USER_MULTI || secrets.SSH_USER }}
+          key: ${{ github.ref == 'refs/heads/multi-prodi' && secrets.SSH_KEY_MULTI || secrets.SSH_KEY }}
+          port: ${{ github.ref == 'refs/heads/multi-prodi' && secrets.SSH_PORT_MULTI || '22' }}
+          script: |
+            echo "Starting deployment for branch: ${{ github.ref }}"
+
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+            nvm use 18
+
+            APP_NAME=${{ github.ref == 'refs/heads/staging' && 'sti-staging' || github.ref == 'refs/heads/multi-prodi' && 'sti-fe' || 'sti-fe' }}
+            APP_PATH=${{ github.ref == 'refs/heads/staging' && '/var/www/sti-staging' || github.ref == 'refs/heads/multi-prodi' && '/home/topfik/sti-fe' || '/var/www/sti-fe' }}
+
+            pm2 stop $APP_NAME || true
+
+            cd $APP_PATH
+            tar -xzf build.tar.gz
+            rm build.tar.gz
+
+            pm2 restart $APP_NAME || pm2 start npm --name $APP_NAME -- start

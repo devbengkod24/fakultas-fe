@@ -1,0 +1,393 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import useSWR from "swr";
+import {
+  Book,
+  BookText,
+  ExternalLink,
+  FileText,
+  AlertCircle,
+  Mail,
+  Phone,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
+import { DataTable } from "@/components/data-table";
+import { ColumnDef } from "@tanstack/react-table";
+import PaginationControls from "@/components/pagination-control";
+import EmptyState from "@/components/empty-state";
+import { LogbookService } from "@/api/tugas-akhir";
+import { LogbookFilterBar } from "@/components/shared-ta-kp/logbook/logbook-filter-bar";
+import { LogbookStudentCardView } from "@/components/shared-ta-kp/logbook/logbook-student-card-view";
+
+interface LogbookStudent {
+  mahasiswa: {
+    id: number;
+    name: string;
+    nim: string;
+    email: string;
+    photo: string | null;
+    no_telp: string;
+    transkrip: string | null;
+    status_mahasiswa: string | null;
+  };
+  jml_bimbingan: number;
+  bab_terakhir: number | null;
+  folder_ta: string | null;
+  kode_periode: number;
+  status_tugas_akhir: string;
+  jml_pending: number;
+}
+
+interface LogbookResponse {
+  data: LogbookStudent[];
+  meta: {
+    success: boolean;
+    message: string;
+    pagination: {
+      total: number;
+      per_page: number;
+      current_page: number;
+      last_page: number;
+    };
+  };
+}
+
+const fetcher = (
+  page: number,
+  limit: number,
+  search: string,
+  status_tugas_akhir?: string
+) =>
+  LogbookService.getLogbookList(page, limit, search, status_tugas_akhir).then(
+    (res) => res
+  );
+
+export function StudentLogbookList() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const urlTab = searchParams.get("tab") || "ALL";
+  const [activePathTab, setActivePathTab] = useState(urlTab);
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
+  const isKoor = searchParams.get("isKoor") === "true";
+
+  const page = Number(searchParams.get("page")) || 1;
+  const limit = Number(searchParams.get("limit")) || 10;
+  const search = searchParams.get("search") || "";
+
+  const statusTugasAkhir =
+    activePathTab === "TA1" ? "1" : activePathTab === "TA2" ? "2" : "";
+
+  const {
+    data: response,
+    error,
+    isLoading,
+  } = useSWR<LogbookResponse>(
+    ["logbook-list", page, limit, search, statusTugasAkhir],
+    () => fetcher(page, limit, search, statusTugasAkhir),
+    {
+      dedupingInterval: 1000,
+    }
+  );
+
+  const pathTabs = [
+    { status: "ALL", label: "Semua" },
+    { status: "TA1", label: "Tugas Akhir 1" },
+    { status: "TA2", label: "Tugas Akhir 2" },
+  ];
+
+  const handleTabChange = (tab: string) => {
+    setActivePathTab(tab);
+
+    const params = new URLSearchParams(searchParams);
+    params.delete("page");
+
+    if (tab !== "ALL") {
+      params.set("tab", tab);
+    } else {
+      params.delete("tab");
+    }
+
+    router.push(`?${params.toString()}`);
+  };
+
+  const columns: ColumnDef<LogbookStudent>[] = [
+    {
+      accessorKey: "mahasiswa.name",
+      header: "Mahasiswa",
+      cell: ({ row }) => {
+        const student = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage
+                src={student.mahasiswa.photo || ""}
+                alt={student.mahasiswa.name}
+                className="object-cover"
+              />
+              <AvatarFallback>
+                {student.mahasiswa.name
+                  .split(" ")
+                  .map((name) => name[0])
+                  .join("")
+                  .substring(0, 2)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col gap-1">
+              <span className="font-semibold capitalize truncate max-w-[200px]">
+                {student.mahasiswa.name.toLowerCase()}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {student.mahasiswa.nim}
+              </span>
+              {student.mahasiswa.email && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="h-3 w-3 text-muted-foreground" />
+                  <span className="truncate max-w-[180px]">
+                    {student.mahasiswa.email}
+                  </span>
+                </div>
+              )}
+              {student.mahasiswa.no_telp && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="h-3 w-3 text-muted-foreground" />
+                  <span>{student.mahasiswa.no_telp}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "mahasiswa.status_mahasiswa",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.mahasiswa.status_mahasiswa;
+        const map: Record<string, { label: string; variant: "success" | "yellow" | "secondary" | "outline" }> = {
+          aktif: { label: "Aktif", variant: "success" },
+          mangkir: { label: "Mangkir", variant: "yellow" },
+          "tidak-aktif": { label: "Tidak Aktif", variant: "secondary" },
+          lulus: { label: "Lulus", variant: "outline" },
+        };
+        const config = status ? (map[status] ?? { label: status, variant: "secondary" as const }) : null;
+        return config ? <Badge variant={config.variant}>{config.label}</Badge> : null;
+      },
+    },
+    {
+      accessorKey: "bab_terakhir",
+      header: "Bab Terakhir",
+      cell: ({ row }) => {
+        const babTerakhir = row.original.bab_terakhir || 0;
+        return (
+          <div className="flex items-center gap-2">
+            <Book className="h-4 w-4 text-muted-foreground" />
+            <span>{babTerakhir}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "jml_bimbingan",
+      header: "Total Bimbingan",
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <span>{row.original.jml_bimbingan}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "progress",
+      header: "Progress",
+      cell: ({ row }) => {
+        const babTerakhir = row.original.bab_terakhir || 0;
+        const progress = Math.min(100, (babTerakhir / 5) * 100);
+        return (
+          <div className="flex items-center gap-2">
+            <Progress value={progress} className="h-2 w-20" />
+            <span className="text-sm">{progress.toFixed(0)}%</span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => {
+        const student = row.original;
+        return (
+          <div className="flex gap-2">
+            <div className="relative">
+              <Button size="sm" asChild>
+                <Link
+                  href={`logbook/${student.mahasiswa.id}${
+                    isKoor ? "?isKoor=true" : ""
+                  }`}
+                >
+                  <BookText className="mr-1 size-4" />
+                  Logbook
+                </Link>
+              </Button>
+              {student.jml_pending > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                >
+                  {student.jml_pending}
+                </Badge>
+              )}
+            </div>
+            {student.folder_ta && (
+              <Button size="sm" variant="outline" asChild>
+                <a
+                  href={student.folder_ta}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="mr-1 size-4" />
+                  Folder
+                </a>
+              </Button>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex gap-4 justify-between items-center">
+          <div className="flex gap-2">
+            {pathTabs.map((tab) => (
+              <Skeleton key={tab.status} className="h-10 w-24" />
+            ))}
+          </div>
+          <Skeleton className="h-10 w-80" />
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden shadow-none">
+              <CardHeader className="bg-muted/50 pb-4">
+                <div className="flex justify-between">
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-40" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                  <Skeleton className="h-6 w-20" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <Skeleton className="h-16 w-16 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-8" />
+                    </div>
+                    <Skeleton className="h-2 w-full" />
+                  </div>
+                  <div className="flex gap-2">
+                    <Skeleton className="h-10 flex-1" />
+                    <Skeleton className="h-10 w-20" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <EmptyState
+        icon={AlertCircle}
+        title="Gagal Memuat Data"
+        subtitle="Terjadi kesalahan saat mengambil data logbook mahasiswa."
+        button={
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Coba Lagi
+          </Button>
+        }
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <LogbookFilterBar
+        tabs={pathTabs}
+        activeTab={activePathTab}
+        onTabChange={handleTabChange}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
+
+      {!response?.data || response.data.length === 0 ? (
+        <div className="space-y-4">
+          <EmptyState
+            icon={BookText}
+            title="Tidak Ada Data Logbook"
+            subtitle={
+              activePathTab !== "ALL"
+                ? "Tidak ada mahasiswa yang sesuai dengan filter yang dipilih."
+                : "Belum ada mahasiswa yang terdaftar dalam logbook."
+            }
+          />
+        </div>
+      ) : viewMode === "table" ? (
+        <DataTable
+          columns={columns}
+          data={response.data}
+          pagination={{
+            currentPage: response.meta.pagination.current_page,
+            lastPage: response.meta.pagination.last_page,
+            limit: response.meta.pagination.per_page,
+            total: response.meta.pagination.total,
+          }}
+          loading={isLoading}
+        />
+      ) : (
+        <LogbookStudentCardView
+          students={response.data}
+          getDetailHref={(studentId) =>
+            `logbook/${studentId}${isKoor ? "?isKoor=true" : ""}`
+          }
+          folderLabel="Folder TA"
+        />
+      )}
+
+      {/* Pagination - only show for card view since DataTable handles its own */}
+      {viewMode === "card" && response?.meta.pagination && (
+        <PaginationControls
+          currentPage={response.meta.pagination.current_page}
+          lastPage={response.meta.pagination.last_page}
+          total={response.meta.pagination.total}
+        />
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,2034 @@
+openapi: 3.0.0
+info:
+  title: ManajemenSkripsi (siadin)
+  version: 1.0.0
+  description: ''
+servers:
+  - url: '{{base_url}}'
+  - url: '{{base_url_production}}'
+paths:
+  /siadin-dsn/login:
+    parameters: []
+    post:
+      summary: Login
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: '*/*'
+          schema:
+            type: string
+        - name: Content-Type
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+            example:
+              username: 0686.11.2013.536
+              password: ini passwordnya
+  /siadin-dsn/refresh-token:
+    parameters: []
+    post:
+      summary: Refresh Token
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+        - name: Content-Type
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+            example:
+              refresh_token: >-
+                eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjE5MiwidXNlcm5hbWUiOiIwNjg2LjExLjIwMjQuNjY2IiwiaWF0IjoxNzMwMTc0NzU5fQ.a91lScRMJJLLqUZoEqHrm_VmLRNLpgDJiuq6kDDDpn0mEHJDx0mOZaoByAbZp6zp5Bc3zZjVSCkI0ymWpvTgE0LDbzU_ou6KhXFi99fuJwY3VwqGc5QNrJ1I7W2I92LOmx_xjOzp18-J-N9EmkUnywy794u-irF-cTlvz4Cm1jEneQ7O24qVwzDAC0kkw_pgzcNduTYCI9RkHNBtkXoLjjj6VXPhJpuS6itG7iOnWcCSQ4lmIVeG41NYaGYIg8p-20IHr_wl04Ej9_drSOc-9kVs6Oc7QcHoC-8sbVvVbgUXZ-QgIOHh0PGFXGyqRSvjLpkYVAm2udHlEQJ9cWOcSA
+  /siadin-dsn/logout:
+    parameters: []
+    post:
+      summary: Logout
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: '*/*'
+          schema:
+            type: string
+        - name: refresh-token
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+            example:
+              refresh_token: >-
+                eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjE5MiwidXNlcm5hbWUiOiIwNjg2LjExLjIwMjQuNjY2IiwiaWF0IjoxNzMwMTcyMTU3fQ.kSn9i50GT7ca62U1eX9SJrqhKZza2DyK5te8WM8oEhsYC5b2MYQiLyO1IS0DciP5HuUg8p71Gmw86ft1otAo0yahIbCB_lwS3urNgFiWJtAUMXLaBL7_HmceyJSERSYm-4SOj6wMthFRM-SCsZJuEgvbQupB8NKkYGk5_iWsXbrILGYVHlpHNdSsW4ZuSTePwzhU3MIyM4gNL7i7Q8LePjU1LThmwaPk9DO9CUSCFeVGJ7a1Qnjv2BKOa3ZvLwDmlFczwmbsNQghN2VU2c8K--cdKoac6Pdl3wNlBq2wQ8EG2HzZnE1qaMDFQ0mN42IRjpfrMF86PPOUTSLxqgk3cg
+  /manajemen-skripsi/tahun-ajaran:
+    parameters: []
+    get:
+      summary: Tahun Ajaran
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kode:
+                          type: string
+                          example: "20251"
+                        semester:
+                          type: string
+                          example: "2025 - 2026 Ganjil"
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Ok"
+              example:
+                data:
+                  - kode: "20251"
+                    semester: "2025 - 2026 Ganjil"
+                  - kode: "20242"
+                    semester: "2024 - 2025 Genap"
+                  - kode: "20241"
+                    semester: "2024 - 2025 Ganjil"
+                  - kode: "20232"
+                    semester: "2023 - 2024 Genap"
+                  - kode: "20231"
+                    semester: "2023 - 2024 Ganjil"
+                  - kode: "20222"
+                    semester: "2022 - 2023 Genap"
+                  - kode: "20221"
+                    semester: "2022 - 2023 Ganjil"
+                  - kode: "20212"
+                    semester: "2021 - 2022 Genap"
+                  - kode: "20211"
+                    semester: "2021 - 2022 Ganjil"
+                  - kode: "20202"
+                    semester: "2020 - 2021 Genap"
+                code: 200
+                message: "Ok"
+  /manajemen-skripsi/progdi:
+    parameters: []
+    get:
+      summary: Progdi
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kode:
+                          type: string
+                          example: "A11"
+                        progdi:
+                          type: string
+                          example: "Teknik Informatika - S1"
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Ok"
+              example:
+                data:
+                  - kode: "A11"
+                    progdi: "Teknik Informatika - S1"
+  /manajemen-skripsi/mhs-status:
+    parameters: []
+    get:
+      summary: Status Mahasiswa
+      parameters:
+        - name: tahun
+          in: query
+          required: false
+          example: '2022'
+          schema:
+            type: integer
+        - name: status_akademik
+          in: query
+          required: false
+          example: '3'
+          schema:
+            type: integer
+        - name: page
+          in: query
+          required: false
+          example: '5'
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          example: '20'
+          schema:
+            type: integer
+        - name: progdi
+          in: query
+          required: false
+          example: A11
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        nim:
+                          type: string
+                          example: "A11.2022.14035"
+                        nama:
+                          type: string
+                          example: "ARIELLA RISQY MAULANA"
+                        statusAkademik:
+                          type: string
+                          example: "Aktif Keuangan"
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Ok"
+              example:
+                data:
+                  - nim: "A11.2022.14035"
+                    nama: "ARIELLA RISQY MAULANA"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14037"
+                    nama: "EGA WAHYU PROBO WIBOWO"
+                    statusAkademik: "Keluar"
+                  - nim: "A11.2022.14038"
+                    nama: "RIFKY BINTANG PRADANA"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14039"
+                    nama: "NUR AQLIAH ILMI"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14040"
+                    nama: "TIAN PUTRA PERDANA"
+                    statusAkademik: "Keluar"
+                  - nim: "A11.2022.14041"
+                    nama: "BIMA NUR ABDILLAH"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14042"
+                    nama: "DAFFA SETYA RAMADHAN"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14043"
+                    nama: "DWI NUR ALFIN"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14044"
+                    nama: "HALIM JAYAKUSUMA WIRADINATA"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14045"
+                    nama: "Y. NOVEN DHIMAS NUGROHO"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14046"
+                    nama: "REIKI MAULANA PUTRA"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14047"
+                    nama: "WILDAN AMIRUDDIN"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14048"
+                    nama: "NATANAEL ANGGIT WICAKSONO"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14049"
+                    nama: "CHANDRA LUKITA BUANA"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14050"
+                    nama: "UMAR RAFI' BESARIONO"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14052"
+                    nama: "MUHAMMAD FICKI MAULANDANI"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14053"
+                    nama: "NADIA EKA APRILIA"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14054"
+                    nama: "DICKY ARISTYANTO NUGROHO"
+                    statusAkademik: "Aktif Keuangan"
+                  - nim: "A11.2022.14056"
+                    nama: "MUHAMMAD SYAIFUL LATIF"
+                    statusAkademik: "Keluar"
+                  - nim: "A11.2022.14057"
+                    nama: "NAUFAL RAFLI ALFIAN"
+                    statusAkademik: "Aktif Keuangan"
+                code: 200
+                message: "Ok"
+  /manajemen-skripsi/status-akademik:
+    parameters: []
+    get:
+      summary: Status Akedemik
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kode:
+                          type: integer
+                          example: 1
+                        statusAkademik:
+                          type: string
+                          example: "Aktif"
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Ok"
+              example:
+                data:
+                  - kode: 1
+                    statusAkademik: "Aktif"
+                  - kode: 2
+                    statusAkademik: "Cuti"
+                  - kode: 3
+                    statusAkademik: "Keluar"
+                  - kode: 4
+                    statusAkademik: "Lulus"
+                  - kode: 5
+                    statusAkademik: "Mangkir"
+                  - kode: 6
+                    statusAkademik: "Meninggal"
+                  - kode: 7
+                    statusAkademik: "Dropout"
+                  - kode: 8
+                    statusAkademik: "Aktif Keuangan"
+                code: 200
+                message: "Ok"
+  /manajemen-skripsi/mhs-ta:
+    parameters: []
+    get:
+      summary: Mahasiswa Mengambil TA
+      parameters:
+        - name: tahun
+          in: query
+          required: false
+          example: '2024'
+          schema:
+            type: integer
+        - name: page
+          in: query
+          required: false
+          example: '1'
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          example: '1000'
+          schema:
+            type: integer
+        - name: progdi
+          in: query
+          required: false
+          example: A11
+          schema:
+            type: string
+        - name: kode_ta
+          in: query
+          required: false
+          example: '20241'
+          schema:
+            type: integer
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        nim:
+                          type: string
+                          example: "A11.2024.15796"
+                        nama:
+                          type: string
+                          example: "AZIZUL PURNAMA RAMADHAN"
+                        email:
+                          type: string
+                          example: "111202415796@mhs.dinus.ac.id"
+                        foto:
+                          type: string
+                          format: uri
+                          example: "https://mahasiswa.dinus.ac.id/images/foto/A/A11/2024/A11.2024.15796.jpg"
+                        ipk:
+                          type: number
+                          format: float
+                          example: 3.4
+                        total_sks:
+                          type: integer
+                          example: 106
+                        matkul:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              kdmk:
+                                type: string
+                                example: "A11.64704"
+                              nmmk:
+                                type: string
+                                example: "TUGAS AKHIR 1"
+                              sks:
+                                type: integer
+                                example: 2
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Ok"
+              example:
+                data:
+                  - nim: "A11.2024.15796"
+                    nama: "AZIZUL PURNAMA RAMADHAN"
+                    email: "111202415796@mhs.dinus.ac.id"
+                    foto: "https://mahasiswa.dinus.ac.id/images/foto/A/A11/2024/A11.2024.15796.jpg"
+                    ipk: 3.4
+                    total_sks: 106
+                    matkul:
+                      - kdmk: "A11.64704"
+                        nmmk: "TUGAS AKHIR 1"
+                        sks: 2
+                  - nim: "A11.2024.16096"
+                    nama: "GAGAH PRISTIYAPUTRA"
+                    email: "111202416096@mhs.dinus.ac.id"
+                    foto: "https://mahasiswa.dinus.ac.id/images/foto/A/A11/2024/A11.2024.16096.jpg"
+                    ipk: 2.61
+                    total_sks: 112
+                    matkul:
+                      - kdmk: "A11.64704"
+                        nmmk: "TUGAS AKHIR 1"
+                        sks: 2
+                  - nim: "A11.2024.16100"
+                    nama: "ZAIN JAMAL HUSAIN"
+                    email: "111202416100@mhs.dinus.ac.id"
+                    foto: "https://mahasiswa.dinus.ac.id/images/foto/A/A11/2024/A11.2024.16100.jpg"
+                    ipk: 3.65
+                    total_sks: 114
+                    matkul:
+                      - kdmk: "A11.64704"
+                        nmmk: "TUGAS AKHIR 1"
+                        sks: 2
+                  - nim: "A11.2024.16103"
+                    nama: "ZAENAL ARIFIN"
+                    email: "111202416103@mhs.dinus.ac.id"
+                    foto: "https://mahasiswa.dinus.ac.id/images/foto/A/A11/2024/A11.2024.16103.jpg"
+                    ipk: 3.34
+                    total_sks: 110
+                    matkul:
+                      - kdmk: "A11.64704"
+                        nmmk: "TUGAS AKHIR 1"
+                        sks: 2
+                code: 200
+                message: "Ok"
+  /manajemen-skripsi/dosen:
+    parameters: []
+    get:
+      summary: Dosen
+      parameters:
+        - name: page
+          in: query
+          required: false
+          example: '1'
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          example: '100'
+          schema:
+            type: integer
+        - name: progdi
+          in: query
+          required: false
+          example: A11
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '200':
+          headers:
+            date:
+              schema:
+                type: string
+              example: Mon, 11 Nov 2024 12:24:05 GMT
+            server:
+              schema:
+                type: string
+              example: uvicorn
+            content-length:
+              schema:
+                type: integer
+              example: '27576'
+            content-type:
+              schema:
+                type: string
+              example: application/json
+          description: Dosen
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        biodata:
+                          type: object
+                          properties:
+                            nip:
+                              type: string
+                            email:
+                              type: string
+                              format: email
+                            nama:
+                              type: string
+                            gelarDepan:
+                              nullable: true
+                            gelarBelakang:
+                              type: string
+                            homebase:
+                              type: string
+                              format: color
+                            statusDosen:
+                              type: string
+                            scholar:
+                              type: string
+                              format: uri
+                        jabatanFungsional:
+                          type: object
+                          properties:
+                            jabatan:
+                              type: string
+                            status:
+                              type: string
+                        jabatanStruktural:
+                          type: object
+                          properties:
+                            unit:
+                              type: string
+                            bagian:
+                              type: string
+                            jabatan:
+                              type: string
+                  code:
+                    type: integer
+                  message:
+                    type: string
+              example:
+                data:
+                  - id: 17
+                    biodata:
+                      nip: 0686.11.1993.040
+                      email: edy.mulyanto@dsn.dinus.ac.id
+                      nama: EDY MULYANTO
+                      gelarDepan: null
+                      gelarBelakang: SSi, M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=vsPOLP0AAAAJ&hl=en
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: PAM
+                      jabatan: Ketua PAM
+                  - id: 21
+                    biodata:
+                      nip: 0686.11.1994.047
+                      email: erlindolphina@dsn.dinus.ac.id
+                      nama: ERLIN DOLPHINA
+                      gelarDepan: null
+                      gelarBelakang: SH, MM
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: Koord. MKU Pancasila
+                      jabatan: Koord. MKU Pancasila
+                  - id: 27
+                    biodata:
+                      nip: 0686.11.1994.057
+                      email: faisal@dsn.dinus.ac.id
+                      nama: EDI FAISAL
+                      gelarDepan: null
+                      gelarBelakang: S.Kom, M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 29
+                    biodata:
+                      nip: 0686.11.1995.067
+                      email: wahid@dsn.dinus.ac.id
+                      nama: ACHMAD WAHID KURNIAWAN
+                      gelarDepan: null
+                      gelarBelakang: S.Si, M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=3oFNcg8AAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Biro Akademik
+                      bagian: BIAK
+                      jabatan: Kepala BIAK
+                  - id: 30
+                    biodata:
+                      nip: 0686.11.1995.068
+                      email: arifin@dsn.dinus.ac.id
+                      nama: ARIPIN
+                      gelarDepan: Dr. Ir.
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=rooGV6AAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor Kepala
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Teknik
+                      bagian: Kaprodi. Biomedis S1 + Koord. MKU Bhs Indonesia
+                      jabatan: Kaprodi. Biomedis S1 + Koord. MKU Bhs Indonesia
+                  - id: 31
+                    biodata:
+                      nip: 0686.11.1995.069
+                      email: ayu.pertiwi@dsn.dinus.ac.id
+                      nama: AYU PERTIWI
+                      gelarDepan: null
+                      gelarBelakang: S.Kom, MT
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 40
+                    biodata:
+                      nip: 0686.11.1996.093
+                      email: nova.rijati@dsn.dinus.ac.id
+                      nama: NOVA RIJATI
+                      gelarDepan: Dr. Ir.
+                      gelarBelakang: 'S.Si., M.Kom, IPU, ASEAN Eng '
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=crZpKP4AAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor Kepala
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: LPM (Lembaga Penjaminan Mutu)
+                      bagian: LPM (Lembaga Penjaminan Mutu)
+                      jabatan: Kepala Lembaga Penjaminan Mutu
+                  - id: 41
+                    biodata:
+                      nip: 0686.11.1996.094
+                      email: sutojo@dsn.dinus.ac.id
+                      nama: T. SUTOJO
+                      gelarDepan: null
+                      gelarBelakang: S.Si, M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=NPazNLgAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 42
+                    biodata:
+                      nip: 0686.11.1996.097
+                      email: heru.lestiawan@dsn.dinus.ac.id
+                      nama: HERU LESTIAWAN
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 43
+                    biodata:
+                      nip: 0686.11.1996.100
+                      email: usman.sudibyo@dsn.dinus.ac.id
+                      nama: USMAN SUDIBYO
+                      gelarDepan: null
+                      gelarBelakang: SSi.,M.KOM
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=GXizp3sAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 46
+                    biodata:
+                      nip: 0686.11.1996.103
+                      email: himawan26@dsn.dinus.ac.id
+                      nama: HERIBERTUS HIMAWAN
+                      gelarDepan: Dr.
+                      gelarBelakang: S.Kom., M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?view_op=list_works&hl=id&user=1aSRrL8AAAAJ
+                    jabatanFungsional:
+                      jabatan: Lektor Kepala
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: UPT Data dan Informasi
+                      bagian: UPT Data dan Informasi
+                      jabatan: Kepala UPT Data dan Informasi
+                  - id: 47
+                    biodata:
+                      nip: 0686.11.1996.104
+                      email: muljono@dsn.dinus.ac.id
+                      nama: MULJONO
+                      gelarDepan: Dr.
+                      gelarBelakang: S.Si, M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=dp36ibQAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor Kepala
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 49
+                    biodata:
+                      nip: 0686.11.1996.106
+                      email: budi.harjo@dsn.dinus.ac.id
+                      nama: BUDI HARJO
+                      gelarDepan: 'Dr. '
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 54
+                    biodata:
+                      nip: 0686.11.1997.125
+                      email: nasetiyanto@dsn.dinus.ac.id
+                      nama: NOOR AGENG SETIYANTO
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=i_7AoHYAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 58
+                    biodata:
+                      nip: 0686.11.1997.132
+                      email: erna.zuni.astuti@dsn.dinus.ac.id
+                      nama: ERNA ZUNI ASTUTI
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=kv5xdQMAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor Kepala
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 64
+                    biodata:
+                      nip: 0686.11.1997.141
+                      email: feri.agustina@dsn.dinus.ac.id
+                      nama: FERI AGUSTINA
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 66
+                    biodata:
+                      nip: 0686.11.1998.147
+                      email: elkaf.rahmawan@dsn.dinus.ac.id
+                      nama: ELKAF RAHMAWAN P.
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: UPT Laboratorium Komputer
+                      bagian: UPT Laboratorium Komputer
+                      jabatan: Kepala UPT Lab. Komputer
+                  - id: 67
+                    biodata:
+                      nip: 0686.11.1998.148
+                      email: suprayogi@dsn.dinus.ac.id
+                      nama: SUPRAYOGI
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: 'Sub Bagian Data '
+                      jabatan: 'Kasub Data '
+                  - id: 83
+                    biodata:
+                      nip: 0686.11.1999.186
+                      email: handoko@dsn.dinus.ac.id
+                      nama: L.BUDI HANDOKO
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=SfzF2E0AAAAJ&hl=en&oi=sra
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 105
+                    biodata:
+                      nip: 0686.11.2000.253
+                      email: ajib.susanto@dsn.dinus.ac.id
+                      nama: AJIB SUSANTO
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=f-48qxYAAAAJ&hl=en&authuser=1
+                    jabatanFungsional:
+                      jabatan: Lektor Kepala
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: Bagian Media Pembelajaran
+                      jabatan: Kepala Bagian Media Pembelajaran
+                  - id: 108
+                    biodata:
+                      nip: 0686.11.2001.267
+                      email: risqa.ifan@dsn.dinus.ac.id
+                      nama: IFAN RIZQA
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=h-ZppIEAAAAJ&hl=en
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: LPM (Lembaga Penjaminan Mutu)
+                      bagian: Pusat Monitoring dan Evaluasi
+                      jabatan: Kepala Pusat Monitoring dan Evaluasi
+                  - id: 144
+                    biodata:
+                      nip: 0686.11.2009.361
+                      email: slamet.sudaryato.n@dsn.dinus.ac.id
+                      nama: SLAMET SUDARYANTO N.
+                      gelarDepan: null
+                      gelarBelakang: ST, M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=V_qwKJQAAAAJ&hl=en
+                    jabatanFungsional:
+                      jabatan: Lektor Kepala
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: Anggota Satuan Penjaminan Mutu Fakultas
+                      jabatan: Anggota Satuan Penjaminan Mutu Fakultas
+                  - id: 146
+                    biodata:
+                      nip: 0686.11.2009.371
+                      email: hanny.haryanto@dsn.dinus.ac.id
+                      nama: HANNY HARYANTO
+                      gelarDepan: null
+                      gelarBelakang: S.Kom, M.T
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=TvlMURcAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 147
+                    biodata:
+                      nip: 0686.11.2009.372
+                      email: umi.rosyidah@dsn.dinus.ac.id
+                      nama: UMI ROSYIDAH
+                      gelarDepan: null
+                      gelarBelakang: S.Kom, M.T
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=dOv4pXoAAAAJ&hl=en
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 149
+                    biodata:
+                      nip: 0686.11.2009.374
+                      email: sendi.novianto@dsn.dinus.ac.id
+                      nama: SENDI NOVIANTO
+                      gelarDepan: Dr.
+                      gelarBelakang: S.Kom, M.T
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=KdTFVD4AAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: UPT Layanan Karir dan Alumni
+                      bagian: UPT Layanan Karir dan Alumni
+                      jabatan: Kepala UPT Layanan Karir dan Alumni
+                  - id: 201
+                    biodata:
+                      nip: 0686.11.1998.146
+                      email: jatmoko14@dsn.dinus.ac.id
+                      nama: CAHAYA JATMOKO
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.com/citations?user=OgELeeIAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 267
+                    biodata:
+                      nip: 0686.11.2002.306
+                      email: grey.salam@dsn.dinus.ac.id
+                      nama: ABDUSSALAM
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Asisten Ahli
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: Kepala Lab. Hadware
+                      jabatan: Kepala Lab. Hadware
+                  - id: 271
+                    biodata:
+                      nip: 0686.11.2004.311
+                      email: adi.prihandono@dsn.dinus.ac.id
+                      nama: ADI PRIHANDONO
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Asisten Ahli
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: Bagian Perencanaan & Pengembangan
+                      jabatan: Kabag. Perencanaan & Pengembangan
+                  - id: 351
+                    biodata:
+                      nip: 0686.11.2012.456
+                      email: abu.salam@dsn.dinus.ac.id
+                      nama: ABU SALAM
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?hl=id&user=xz56FXQAAAAJ&view_op=list_works
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 731
+                    biodata:
+                      nip: 0686.11.2013.532
+                      email: yanipartiastuti@dsn.dinus.ac.id
+                      nama: YANI PARTI ASTUTI
+                      gelarDepan: null
+                      gelarBelakang: S.Si, M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=hkHhtE8AAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 763
+                    biodata:
+                      nip: 0686.11.2013.516
+                      email: liya.umaroh@dsn.dinus.ac.id
+                      nama: LIYA UMAROH
+                      gelarDepan: null
+                      gelarBelakang: M.Hum
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=vZDUSSIAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1003
+                    biodata:
+                      nip: 0686.11.2015.633
+                      email: aria@dsn.dinus.ac.id
+                      nama: RAMA ARIA MEGANTARA
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.com/citations?user=P5tMHacAAAAJ&hl=en
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1048
+                    biodata:
+                      nip: 0686.11.2011.398
+                      email: fauziadi@dsn.dinus.ac.id
+                      nama: FAUZI ADI RAFRASTARA
+                      gelarDepan: null
+                      gelarBelakang: M.CS
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Biro Kerjasama dan KUI
+                      bagian: Kepala Bagian Pelayanan dan Administrasi
+                      jabatan: Kepala Bagian Pelayanan dan Administrasi
+                  - id: 1050
+                    biodata:
+                      nip: 0686.11.2012.407
+                      email: christy.atika.sari@dsn.dinus.ac.id
+                      nama: CHRISTY ATIKA SARI
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=TKVTFhIAAAAJ&hl=id&oi=ao
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1098
+                    biodata:
+                      nip: 0686.11.2011.415
+                      email: catur.supriyanto@dsn.dinus.ac.id
+                      nama: CATUR SUPRIYANTO
+                      gelarDepan: Dr.
+                      gelarBelakang: S. Kom, M.CS
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=PYo2A5MAAAAJ&hl=en
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1099
+                    biodata:
+                      nip: 0686.11.2011.416
+                      email: ricardus.anggi@dsn.dinus.ac.id
+                      nama: RICARDUS ANGGI PRAMUNENDAR
+                      gelarDepan: Dr.
+                      gelarBelakang: S.Kom,. M.CS
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=n1JecZYAAAAJ&hl=en
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: Program Studi PJJ S1
+                      jabatan: Kepala Program Studi PJJ S1
+                  - id: 1113
+                    biodata:
+                      nip: 0686.11.2013.536
+                      email: defri.kurniawan@dsn.dinus.ac.id
+                      nama: DEFRI KURNIAWAN
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?hl=en&btnA=1&user=Kh856koAAAAJ
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1157
+                    biodata:
+                      nip: 0686.11.2011.423
+                      email: guruh.fajar.shidik@dsn.dinus.ac.id
+                      nama: GURUH FAJAR SHIDIK
+                      gelarDepan: Dr.
+                      gelarBelakang: S.Kom., M.Cs
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=pRFwdLQAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor Kepala
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Rektorat UDINUS
+                      bagian: Wakil Rektor II
+                      jabatan: Wakil Rektor II
+                  - id: 1195
+                    biodata:
+                      nip: 0686.11.2012.440
+                      email: fahri@dsn.dinus.ac.id
+                      nama: FAHRI FIRDAUSILLAH
+                      gelarDepan: null
+                      gelarBelakang: S.Kom, M.CS
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=yVusIPsAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: UPT Data dan Informasi
+                      bagian: Bagian Sistem Informasi Akademi
+                      jabatan: Kabag. Sistem Informasi Akademi
+                  - id: 1197
+                    biodata:
+                      nip: 0686.11.2012.442
+                      email: erwin@dsn.dinus.ac.id
+                      nama: ERWIN YUDI HIDAYAT
+                      gelarDepan: null
+                      gelarBelakang: S.Kom, M.CS
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: Bagian Media Pembelajaran
+                      jabatan: Wakil Kabag. Media Pembelajaran
+                  - id: 1199
+                    biodata:
+                      nip: 0686.11.2012.444
+                      email: ''
+                      nama: ADHITYA NUGRAHA
+                      gelarDepan: null
+                      gelarBelakang: S.Kom, M.CS
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: Sekretaris Program Studi TI S1
+                      jabatan: Sekretaris Proram Studi TI S1
+                  - id: 1284
+                    biodata:
+                      nip: 0686.11.2012.459
+                      email: junta@dsn.dinus.ac.id
+                      nama: JUNTA ZENIARJA
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=EtZdMVIAAAAJ&hl=en
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1285
+                    biodata:
+                      nip: 0686.11.2012.458
+                      email: eko.hari@dsn.dinus.ac.id
+                      nama: EKO HARI RACHMAWANTO
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=RG2Im6cAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Program Studi Teknik Informatika Kediri
+                      bagian: Program Studi Teknik Informatika
+                      jabatan: Kepala Program Studi Teknik Informatika Kediri
+                  - id: 1286
+                    biodata:
+                      nip: 0686.11.2012.460
+                      email: ardytha.luthfiarta@dsn.dinus.ac.id
+                      nama: ARDYTHA LUTHFIARTA
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=hJuwBL8AAAAJ&hl=en&authuser=1
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: 'Koord. IUP dan Koord MKU '
+                      jabatan: 'Koord. IUP dan Koord MKU '
+                  - id: 1298
+                    biodata:
+                      nip: 0686.11.2012.404
+                      email: ''
+                      nama: DE ROSAL, IGNATIUS MOSES SETIADI
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=tFeuHLcAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor Kepala
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1347
+                    biodata:
+                      nip: 0686.11.2013.537
+                      email: novita.kn@dsn.dinus.ac.id
+                      nama: NOVITA KURNIA NINGRUM
+                      gelarDepan: null
+                      gelarBelakang: M. Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: novita.kn@dsn.dinus.ac.id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: Sekretariat
+                      jabatan: 'Staf Sekretariat '
+                  - id: 1522
+                    biodata:
+                      nip: 0686.11.2014.577
+                      email: puri.kusuma.dwi.putri@dsn.dinus.ac.id
+                      nama: PURI KUSUMA DWI PUTRI
+                      gelarDepan: Dr.
+                      gelarBelakang: M.I.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1529
+                    biodata:
+                      nip: 0686.11.2014.571
+                      email: chaerul@dsn.dinus.ac.id
+                      nama: CHAERUL UMAM
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=NqbjtbIAAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1538
+                    biodata:
+                      nip: 0686.11.2014.583
+                      email: danang.wu@dsn.dinus.ac.id
+                      nama: DANANG WAHYU UTOMO
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=WLL373QAAAAJ&hl=en&oi=ao
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1540
+                    biodata:
+                      nip: 0686.11.2014.585
+                      email: egia@dsn.dinus.ac.id
+                      nama: EGIA ROSI SUBHIYAKTO
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=deHOCDYAAAAJ&hl=en
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1613
+                    biodata:
+                      nip: 0686.11.2015.814
+                      email: ''
+                      nama: MUHAMAD AKROM
+                      gelarDepan: null
+                      gelarBelakang: M.Si
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Asisten Ahli
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1614
+                    biodata:
+                      nip: 0686.11.2015.616
+                      email: cinantya.paramita@dsn.dinus.ac.id
+                      nama: CINANTYA PARAMITA
+                      gelarDepan: null
+                      gelarBelakang: S.Kom., M.Eng
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Biro Kerjasama dan KUI
+                      bagian: Wakil Ka. Biro Kerjasama dan KUI
+                      jabatan: Wakil Ka. Biro Kerjasama dan KUI
+                  - id: 1626
+                    biodata:
+                      nip: 0686.11.2015.618
+                      email: aprilyani.safitri@dsn.dinus.ac.id
+                      nama: APRILYANI NUR SAFITRI
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Tenaga Pengajar
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: UPT Data dan Informasi
+                      bagian: Bagian Help Desk dan Dev. Sys
+                      jabatan: Kabag. Help Desk dan Dev. Sys
+                  - id: 1639
+                    biodata:
+                      nip: 0686.11.2015.821
+                      email: ''
+                      nama: GUSTINA ALFA TRISNAPRADIKA
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Tenaga Pengajar
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1675
+                    biodata:
+                      nip: 0686.11.2016.843
+                      email: ''
+                      nama: WISE HEROWATI
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Tenaga Pengajar
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1682
+                    biodata:
+                      nip: 0686.11.2016.659
+                      email: wildanil.ghozi@dsn.dinus.ac.id
+                      nama: WILDANIL GHOZI
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Asisten Ahli
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: UPT Laboratorium Komputer
+                      bagian: Bagian Server & Jaringan Lab
+                      jabatan: Admin Server & Jaringan Lab.Komputer FIK
+                  - id: 1702
+                    biodata:
+                      nip: 0686.11.2016.671
+                      email: prabowo@dsn.dinus.ac.id
+                      nama: WAHYU AJI EKO PRABOWO
+                      gelarDepan: Dr.
+                      gelarBelakang: S.Si, M.T
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: >-
+                        https://scholar.google.co.id/citations?user=9T_jMM8AAAAJ&hl=id
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: Fakultas Ilmu Komputer
+                      bagian: 'Divisi Bid. LPPM FIK '
+                      jabatan: 'Kepala Divisi Bid. LPPM FIK '
+                  - id: 1747
+                    biodata:
+                      nip: 0686.11.2016.683
+                      email: rdannyoka@dsn.dinus.ac.id
+                      nama: DANNY OKA RATMANA
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Tenaga Pengajar
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: UPT Data dan Informasi
+                      bagian: Bagian Data Warehouse
+                      jabatan: Kabag. Data Warehouse
+                  - id: 1896
+                    biodata:
+                      nip: 0686.11.2018.745
+                      email: galuhwilujengs@dsn.dinus.ac.id
+                      nama: GALUH WILUJENG SARASWATI
+                      gelarDepan: null
+                      gelarBelakang: M.CS
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Asisten Ahli
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 1897
+                    biodata:
+                      nip: 0686.11.2018.746
+                      email: syaifur@dsn.dinus.ac.id
+                      nama: MUHAMMAD SYAIFUR ROHMAN
+                      gelarDepan: null
+                      gelarBelakang: M.CS
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Asisten Ahli
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: UPT Data dan Informasi
+                      bagian: Bagian Data PDDIKTI
+                      jabatan: Kabag. Data PDDIKTI
+                  - id: 1898
+                    biodata:
+                      nip: 0686.11.2018.747
+                      email: nurulanisasw@dsn.dinus.ac.id
+                      nama: NURUL ANISA SRI WINARSIH
+                      gelarDepan: null
+                      gelarBelakang: S.Kom, M.Cs
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Asisten Ahli
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 2031
+                    biodata:
+                      nip: 0686.11.2019.798
+                      email: filmada.os@dsn.dinus.ac.id
+                      nama: FILMADA OCKY SAPUTRA
+                      gelarDepan: null
+                      gelarBelakang: M.Eng
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Asisten Ahli
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 2032
+                    biodata:
+                      nip: 0686.11.2019.799
+                      email: ardiawanbagus@dsn.dinus.ac.id
+                      nama: ARDIAWAN BAGUS HARISA
+                      gelarDepan: null
+                      gelarBelakang: S.Kom, M.Sc
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Asisten Ahli
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 2289
+                    biodata:
+                      nip: 0686.11.2022.985
+                      email: ''
+                      nama: MUHAMMAD NAUFAL
+                      gelarDepan: null
+                      gelarBelakang: S.Tr.T, M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Tenaga Pengajar
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 2294
+                    biodata:
+                      nip: 0686.11.2022.986
+                      email: harun.alazies@dsn.dinus.ac.id
+                      nama: HARUN AL AZIES
+                      gelarDepan: null
+                      gelarBelakang: S.Stat., M.Stat.
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Tenaga Pengajar
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 2298
+                    biodata:
+                      nip: 0686.11.2023.996
+                      email: d.c.prakoso@dsn.dinus.ac.id
+                      nama: DANAR CAHYO PRAKOSO
+                      gelarDepan: null
+                      gelarBelakang: M.Kom.
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Tenaga Pengajar
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 2313
+                    biodata:
+                      nip: 0686.11.2023.001
+                      email: novianto.hidayat@dsn.dinus.ac.id
+                      nama: NOVIANTO NUR HIDAYAT
+                      gelarDepan: null
+                      gelarBelakang: M.Sc
+                      homebase: A11
+                      statusDosen: Dosen Tetap
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Tenaga Pengajar
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 2428
+                    biodata:
+                      nip: 0686.11.2023.117
+                      email: sindhu.rakasiwi@dsn.dinus.ac.id
+                      nama: SINDHU RAKASIWI
+                      gelarDepan: null
+                      gelarBelakang: M.Kom
+                      homebase: A11
+                      statusDosen: Dosen Kontrak
+                      scholar: ''
+                    jabatanFungsional:
+                      jabatan: Lektor
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                  - id: 2501
+                    biodata:
+                      nip: 0686.11.2024.666
+                      email: null
+                      nama: Fafifu
+                      gelarDepan: null
+                      gelarBelakang: S.Bulgogi
+                      homebase: A11
+                      statusDosen: Dosen Kontrak
+                      scholar: null
+                    jabatanFungsional:
+                      jabatan: Tenaga Pengajar
+                      status: Aktif
+                    jabatanStruktural:
+                      unit: null
+                      bagian: null
+                      jabatan: null
+                code: 200
+                message: Ok
+  /manajemen-skripsi/plot-pembimbing:
+    parameters: []
+    get:
+      summary: Plot Pembimbing
+      parameters:
+        - name: page
+          in: query
+          required: false
+          example: '1'
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          example: '10'
+          schema:
+            type: integer
+        - name: progdi
+          in: query
+          required: false
+          example: A11
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        nim:
+                          type: string
+                          example: "A11.2022.14821"
+                        pembimbing:
+                          type: object
+                          properties:
+                            nip:
+                              type: string
+                              example: "0686.11.2004.311"
+                            nama:
+                              type: string
+                              example: "ADI PRIHANDONO"
+                            email:
+                              type: string
+                              example: "adi.prihandono@dsn.dinus.ac.id"
+                            gelarDepan:
+                              type: string
+                              nullable: true
+                              example: null
+                            gelarBelakang:
+                              type: string
+                              example: "M.Kom"
+                        topik:
+                          type: string
+                          nullable: true
+                          example: null
+                        judul:
+                          type: string
+                          nullable: true
+                          example: "PENERAPAN METODE K-MEANS UNTUK CLUSTERISASI DATA PENJUALAN MAKANAN DAN MINUMAN PADA KERTAS KERJA COFFEE SHOP"
+                        inputTime:
+                          type: string
+                          format: date-time
+                          example: "2025-07-08T08:39:46"
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "Ok"
+              example:
+                data:
+                  - nim: "A11.2022.14821"
+                    pembimbing:
+                      nip: "0686.11.2004.311"
+                      nama: "ADI PRIHANDONO"
+                      email: "adi.prihandono@dsn.dinus.ac.id"
+                      gelarDepan: null
+                      gelarBelakang: "M.Kom"
+                    topik: null
+                    judul: "PENERAPAN METODE K-MEANS UNTUK CLUSTERISASI DATA PENJUALAN MAKANAN DAN MINUMAN PADA KERTAS KERJA COFFEE SHOP"
+                    inputTime: "2025-07-08T08:39:46"
+                  - nim: "A11.2021.13926"
+                    pembimbing:
+                      nip: "0686.11.2011.398"
+                      nama: "FAUZI ADI RAFRASTARA"
+                      email: "fauziadi@dsn.dinus.ac.id"
+                      gelarDepan: null
+                      gelarBelakang: "M.CS"
+                    topik: null
+                    judul: "KLASIFIKASI MALWARE ANDROID PADA DATASET DREBIN MENGGUNAKAN JARINGAN SARAF TIRUAN DENGAN ADASYN"
+                    inputTime: "2025-05-15T15:55:15"
+                code: 200
+                message: "Ok"
+    post:
+      summary: Plot Pembimbing
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nim:
+                  type: string
+                nip:
+                  type: string
+            example:
+              nim: A11.2018.11033
+              nip: 0686.11.2012.440
+    put:
+      summary: Plot Pembimbing
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nim:
+                  type: string
+                nip:
+                  type: string
+            example:
+              nim: A11.2018.11033
+              nip: 0686.11.2012.440
+    delete:
+      summary: Plot Pembimbing
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses: {}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nim:
+                  type: string
+                nip:
+                  type: string
+            example:
+              nim: A11.2018.11033
+              nip: 0686.11.2012.440
+  /manajemen-skripsi/mhs-ujian:
+    parameters: []
+    get:
+      summary: Mahasiswa Ujian
+      parameters:
+        - name: page
+          in: query
+          required: false
+          example: '1'
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          example: '50'
+          schema:
+            type: integer
+        - name: progdi
+          in: query
+          required: false
+          example: A11
+          schema:
+            type: string
+      responses: {}
