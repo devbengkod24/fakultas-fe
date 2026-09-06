@@ -79,10 +79,22 @@ const editPeriodeSchema = z
   .object({
     tgl_awal: z.date({ required_error: "Tanggal mulai harus diisi" }),
     tgl_akhir: z.date({ required_error: "Tanggal akhir harus diisi" }),
+    tgl_awal_ta: z.date({ required_error: "Tanggal mulai TA harus diisi" }),
+    tgl_akhir_ta: z.date({ required_error: "Tanggal akhir TA harus diisi" }),
+    tgl_awal_bk: z.date({ required_error: "Tanggal mulai BK harus diisi" }),
+    tgl_akhir_bk: z.date({ required_error: "Tanggal akhir BK harus diisi" }),
   })
   .refine((data) => data.tgl_awal < data.tgl_akhir, {
     message: "Tanggal mulai harus lebih awal dari tanggal akhir",
     path: ["tgl_akhir"],
+  })
+  .refine((data) => data.tgl_awal_ta < data.tgl_akhir_ta, {
+    message: "Tanggal mulai TA harus lebih awal dari tanggal akhir TA",
+    path: ["tgl_akhir_ta"],
+  })
+  .refine((data) => data.tgl_awal_bk < data.tgl_akhir_bk, {
+    message: "Tanggal mulai BK harus lebih awal dari tanggal akhir BK",
+    path: ["tgl_akhir_bk"],
   });
 
 type EditPeriodeFormData = z.infer<typeof editPeriodeSchema>;
@@ -109,6 +121,10 @@ const EditPeriodeModal = ({
     defaultValues: {
       tgl_awal: undefined,
       tgl_akhir: undefined,
+      tgl_awal_ta: undefined,
+      tgl_akhir_ta: undefined,
+      tgl_awal_bk: undefined,
+      tgl_akhir_bk: undefined,
     },
   });
 
@@ -117,6 +133,10 @@ const EditPeriodeModal = ({
       form.reset({
         tgl_awal: periode.tgl_awal ? new Date(periode.tgl_awal) : undefined,
         tgl_akhir: periode.tgl_akhir ? new Date(periode.tgl_akhir) : undefined,
+        tgl_awal_ta: periode.tgl_awal_ta ? new Date(periode.tgl_awal_ta) : undefined,
+        tgl_akhir_ta: periode.tgl_akhir_ta ? new Date(periode.tgl_akhir_ta) : undefined,
+        tgl_awal_bk: periode.tgl_awal_bk ? new Date(periode.tgl_awal_bk) : undefined,
+        tgl_akhir_bk: periode.tgl_akhir_bk ? new Date(periode.tgl_akhir_bk) : undefined,
       });
     }
   }, [periode, form]);
@@ -129,6 +149,10 @@ const EditPeriodeModal = ({
       const res = await PeriodeFakultasService.update(periode.id, {
         tgl_awal: formatDateToString(data.tgl_awal),
         tgl_akhir: formatDateToString(data.tgl_akhir),
+        tgl_awal_ta: formatDateToString(data.tgl_awal_ta),
+        tgl_akhir_ta: formatDateToString(data.tgl_akhir_ta),
+        tgl_awal_bk: formatDateToString(data.tgl_awal_bk),
+        tgl_akhir_bk: formatDateToString(data.tgl_akhir_bk),
       });
 
       handleToastResponse(res);
@@ -149,7 +173,7 @@ const EditPeriodeModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Edit Periode</DialogTitle>
           <DialogDescription>
@@ -242,6 +266,182 @@ const EditPeriodeModal = ({
                 </FormItem>
               )}
             />
+
+            <div className="border-t pt-4 mt-4">
+              <p className="text-sm font-medium mb-3">Tanggal Tugas Akhir (TA)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="tgl_awal_ta"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-xs">Mulai TA</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal h-9",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              disabled={isLoading}
+                            >
+                              {field.value ? (
+                                dayjs(field.value).locale("id").format("DD MMM YYYY")
+                              ) : (
+                                <span>Pilih</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            defaultMonth={field.value || new Date()}
+                            disabled={(date) => date < new Date("1900-01-01") || isLoading}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tgl_akhir_ta"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-xs">Akhir TA</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal h-9",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              disabled={isLoading}
+                            >
+                              {field.value ? (
+                                dayjs(field.value).locale("id").format("DD MMM YYYY")
+                              ) : (
+                                <span>Pilih</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            defaultMonth={field.value || new Date()}
+                            disabled={(date) => date < new Date("1900-01-01") || isLoading}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-3">Tanggal Bimbingan Karir (BK)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="tgl_awal_bk"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-xs">Mulai BK</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal h-9",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              disabled={isLoading}
+                            >
+                              {field.value ? (
+                                dayjs(field.value).locale("id").format("DD MMM YYYY")
+                              ) : (
+                                <span>Pilih</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            defaultMonth={field.value || new Date()}
+                            disabled={(date) => date < new Date("1900-01-01") || isLoading}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tgl_akhir_bk"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-xs">Akhir BK</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal h-9",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              disabled={isLoading}
+                            >
+                              {field.value ? (
+                                dayjs(field.value).locale("id").format("DD MMM YYYY")
+                              ) : (
+                                <span>Pilih</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            defaultMonth={field.value || new Date()}
+                            disabled={(date) => date < new Date("1900-01-01") || isLoading}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
@@ -373,6 +573,26 @@ export default function TableSyncPeriode() {
       accessorKey: "tgl_akhir",
       header: "Tanggal Selesai",
       cell: ({ row }) => formatDate(row.getValue("tgl_akhir")),
+    },
+    {
+      accessorKey: "tgl_awal_ta",
+      header: "Mulai TA",
+      cell: ({ row }) => formatDate(row.getValue("tgl_awal_ta")),
+    },
+    {
+      accessorKey: "tgl_akhir_ta",
+      header: "Akhir TA",
+      cell: ({ row }) => formatDate(row.getValue("tgl_akhir_ta")),
+    },
+    {
+      accessorKey: "tgl_awal_bk",
+      header: "Mulai BK",
+      cell: ({ row }) => formatDate(row.getValue("tgl_awal_bk")),
+    },
+    {
+      accessorKey: "tgl_akhir_bk",
+      header: "Akhir BK",
+      cell: ({ row }) => formatDate(row.getValue("tgl_akhir_bk")),
     },
     {
       id: "status",
