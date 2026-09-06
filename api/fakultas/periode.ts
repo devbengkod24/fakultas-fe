@@ -51,6 +51,19 @@ const PeriodeFakultas = ({
           throw new Error(`Error change status periode: ${error.message}`);
         });
     },
+
+    update: (id: number, data: any) => {
+      const headers = config();
+      return fetch(`${baseUrl}${endpoint}/${id}/update`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+        headers: headers,
+      })
+        .then((response) => response.json())
+        .catch((error) => {
+          throw new Error(`Error update periode: ${error.message}`);
+        });
+    },
   };
 };
 
