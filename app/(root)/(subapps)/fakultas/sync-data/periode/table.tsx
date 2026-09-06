@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
   Calendar as CalendarIcon,
+  Edit,
+  MoreHorizontal,
   RefreshCcw,
 } from "lucide-react";
 import { DataTable } from "@/components/data-table";
@@ -25,6 +27,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import dayjs from "dayjs";
 import "dayjs/locale/id";
 
@@ -34,8 +68,195 @@ interface Periode {
   tahun_ajaran: string;
   tgl_awal: string | null;
   tgl_akhir: string | null;
+  tgl_awal_ta: string | null;
+  tgl_akhir_ta: string | null;
+  tgl_awal_bk: string | null;
+  tgl_akhir_bk: string | null;
   status: boolean | number;
 }
+
+const editPeriodeSchema = z
+  .object({
+    tgl_awal: z.date({ required_error: "Tanggal mulai harus diisi" }),
+    tgl_akhir: z.date({ required_error: "Tanggal akhir harus diisi" }),
+  })
+  .refine((data) => data.tgl_awal < data.tgl_akhir, {
+    message: "Tanggal mulai harus lebih awal dari tanggal akhir",
+    path: ["tgl_akhir"],
+  });
+
+type EditPeriodeFormData = z.infer<typeof editPeriodeSchema>;
+
+const formatDateToString = (date: Date) => {
+  return dayjs(date).format("YYYY-MM-DD");
+};
+
+const EditPeriodeModal = ({
+  periode,
+  isOpen,
+  onClose,
+  onSuccess,
+}: {
+  periode: Periode | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<EditPeriodeFormData>({
+    resolver: zodResolver(editPeriodeSchema),
+    defaultValues: {
+      tgl_awal: undefined,
+      tgl_akhir: undefined,
+    },
+  });
+
+  useEffect(() => {
+    if (periode) {
+      form.reset({
+        tgl_awal: periode.tgl_awal ? new Date(periode.tgl_awal) : undefined,
+        tgl_akhir: periode.tgl_akhir ? new Date(periode.tgl_akhir) : undefined,
+      });
+    }
+  }, [periode, form]);
+
+  const onSubmit = async (data: EditPeriodeFormData) => {
+    if (!periode) return;
+
+    setIsLoading(true);
+    try {
+      const res = await PeriodeFakultasService.update(periode.id, {
+        tgl_awal: formatDateToString(data.tgl_awal),
+        tgl_akhir: formatDateToString(data.tgl_akhir),
+      });
+
+      handleToastResponse(res);
+      onSuccess();
+      onClose();
+      form.reset();
+    } catch {
+      toast.error("Gagal mengupdate periode");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    form.reset();
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Periode</DialogTitle>
+          <DialogDescription>
+            Update tanggal periode untuk {periode?.tahun_ajaran}
+          </DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="tgl_awal"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Tanggal Mulai</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                          disabled={isLoading}
+                        >
+                          {field.value ? (
+                            dayjs(field.value).locale("id").format("DD MMMM YYYY")
+                          ) : (
+                            <span>Pilih tanggal</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        defaultMonth={field.value || new Date()}
+                        disabled={(date) => date < new Date("1900-01-01") || isLoading}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tgl_akhir"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Tanggal Akhir</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                          disabled={isLoading}
+                        >
+                          {field.value ? (
+                            dayjs(field.value).locale("id").format("DD MMMM YYYY")
+                          ) : (
+                            <span>Pilih tanggal</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        defaultMonth={field.value || new Date()}
+                        disabled={(date) => date < new Date("1900-01-01") || isLoading}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
+                Batal
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Menyimpan..." : "Simpan"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const fetcher = (
   page: number,
@@ -66,6 +287,17 @@ export default function TableSyncPeriode() {
   const filter_status = searchParams.get("status") || "all";
 
   const [isSyncing, setIsSyncing] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedPeriode, setSelectedPeriode] = useState<Periode | null>(null);
+
+  const handleEdit = (periode: Periode) => {
+    setSelectedPeriode(periode);
+    setEditModalOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    mutate(mutateKey);
+  };
 
   const mutateKey = ["periode-list", page, limit, search, filter_status];
 
@@ -155,6 +387,29 @@ export default function TableSyncPeriode() {
         );
       },
     },
+    {
+      id: "actions",
+      header: "Aksi",
+      cell: ({ row }) => {
+        const periode = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleEdit(periode)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Periode
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
   ];
 
   if (error) {
@@ -225,6 +480,13 @@ export default function TableSyncPeriode() {
           }}
         />
       )}
+
+      <EditPeriodeModal
+        periode={selectedPeriode}
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        onSuccess={handleEditSuccess}
+      />
     </>
   );
 }
