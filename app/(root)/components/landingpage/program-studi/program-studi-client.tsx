@@ -144,18 +144,23 @@ export default function ProgramStudiClient() {
         </div>
 
         {/* Desktop Tabs Navigation */}
-        <div className="hidden md:flex border-b border-white/20 mb-10 gap-8 justify-center">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-4 px-4 text-[15px] font-semibold whitespace-nowrap transition-colors border-b-2 ${
-                activeTab === tab ? "border-[#F3BC45] text-[#F3BC45]" : "border-transparent text-blue-200 hover:text-white hover:border-white/30"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="hidden md:block border-b border-white/20 mb-10 overflow-x-auto scrollbar-hidden">
+          <div className="flex gap-2 md:gap-8 w-max min-w-full justify-start md:justify-center px-4 sm:px-0">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-4 px-4 text-sm md:text-[15px] font-semibold whitespace-nowrap transition-colors shrink-0 relative ${
+                  activeTab === tab ? "text-[#F3BC45]" : "text-blue-200 hover:text-white"
+                }`}
+              >
+                {tab}
+                {activeTab === tab && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F3BC45]"></div>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Cards Grid */}
