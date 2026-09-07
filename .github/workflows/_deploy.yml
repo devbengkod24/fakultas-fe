@@ -53,6 +53,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -e
+            source ~/.bashrc || source ~/.profile || true
             cd ${{ vars.APP_PATH }}
             tar -xzf build.tar.gz
             rm build.tar.gz
