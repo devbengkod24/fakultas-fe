@@ -31,8 +31,10 @@ const formSchema = z.object({
   position: z.string().min(1, "Jabatan dosen harus diisi"),
   order_no: z
     .union([z.string(), z.number()])
-    .optional()
-    .transform((val) => (val === undefined || val === "" ? "" : String(val))),
+    .refine((val) => val !== "" && val !== undefined, {
+      message: "Nomor urut harus diisi",
+    })
+    .transform((val) => String(val)),
   image: z.string().optional(),
 });
 
@@ -144,6 +146,11 @@ const DialogPopUp: React.FC<DialogPopUpProps> = ({
 
   const handleFormSubmit = async (data: FormData) => {
     if (!onSubmit) return;
+
+    if (mode === "add" && !selectedFile) {
+      form.setError("image", { message: "Foto harus diunggah" });
+      return;
+    }
 
     const formData: StrukturOrganisasi & { imageFile?: File } = {
       ...data,
@@ -263,7 +270,7 @@ const DialogPopUp: React.FC<DialogPopUpProps> = ({
               name="order_no"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nomor Urut (Opsional)</FormLabel>
+                  <FormLabel>Nomor Urut</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
