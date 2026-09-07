@@ -47,7 +47,6 @@ next-env.d.ts
 .blackboxrules
 
 Step_1.md
-package-lock.json
 # Gemini CLI / Agent files
 .agents/
 skills-lock.json

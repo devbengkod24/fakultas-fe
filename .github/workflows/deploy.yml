@@ -1,4 +1,4 @@
-name: Build & Deploy STI-FE
+name: Build & Deploy FIK-Apps FE
 
 on:
   push:

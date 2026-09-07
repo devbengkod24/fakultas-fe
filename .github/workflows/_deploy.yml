@@ -16,11 +16,11 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 22
+          cache: 'npm'   # atau 'pnpm'/'yarn' sesuai lock file yang dipakai
 
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE }}" > .env
