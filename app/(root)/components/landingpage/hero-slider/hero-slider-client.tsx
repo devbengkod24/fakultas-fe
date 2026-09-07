@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { HeroSlider } from "@/types/admin/landing-page/hero-slider/hero-slider";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 
 type Props = {
@@ -146,16 +146,10 @@ export default function HeroSliderClient({ images }: Props) {
       <main className="mx-auto w-full max-w-7xl px-6 md:px-12 lg:px-20">
         <div className="relative z-10 grid grid-cols-1 items-center gap-2 lg:grid-cols-2 lg:gap-6 xl:gap-8">
           {/* Left Content */}
-          <div className="flex w-full flex-col items-start gap-2 md:gap-4 lg:gap-5 xl:gap-6">
+          <div className="flex flex-col items-start gap-6">
             {/* Badge */}
-            <div className="w-full text-center md:text-left">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 shadow-sm backdrop-blur-sm md:px-4 md:py-2">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-secondary md:h-2 md:w-2"></span>
-                <span className="text-[10px] font-semibold tracking-wide text-white md:text-sm">
-                  Fakultas Ilmu Komputer
-                </span>
-                <Sparkles className="h-3 w-3 text-secondary md:h-4 md:w-4" />
-              </div>
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
+              <span className="text-sm font-semibold text-white">Fakultas Ilmu Komputer</span>
             </div>
 
             {/* Typography */}
@@ -213,31 +207,25 @@ export default function HeroSliderClient({ images }: Props) {
         </div>
 
         {/* Stats Section Bottom */}
-        <div className="relative z-10 mt-6 flex flex-wrap items-center gap-4 border-t border-white/20 pt-4 lg:mt-8 lg:gap-8 lg:pt-6 xl:mt-12">
-          <div className="flex w-full flex-wrap justify-between gap-8 lg:w-full lg:justify-start lg:gap-12 xl:gap-24">
+        <div className="mt-16 flex flex-wrap items-center justify-center gap-8 z-10 relative border-t border-white/20 pt-8">
+          <div className="grid grid-cols-3 gap-4 lg:gap-24">
             <div className="flex flex-col gap-1">
-              <span className="text-2xl font-extrabold text-secondary md:text-5xl">
+              <span className="text-4xl md:text-5xl font-extrabold text-secondary">
                 <CountUp end={15} suffix="K+" duration={2000} />
               </span>
-              <span className="text-xs font-medium text-blue-100 md:text-base">
-                Alumni Sukses
-              </span>
+              <span className="text-blue-100 font-medium text-sm md:text-base">Alumni Sukses</span>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-2xl font-extrabold text-white md:text-5xl">
+              <span className="text-4xl md:text-5xl font-extrabold text-white">
                 <CountUp end={95} suffix="%" duration={2000} />
               </span>
-              <span className="text-xs font-medium text-blue-100 md:text-base">
-                Tingkat Kelulusan
-              </span>
+              <span className="text-blue-100 font-medium text-sm md:text-base">Tingkat Kelulusan</span>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-2xl font-extrabold text-white md:text-5xl">
+              <span className="text-4xl md:text-5xl font-extrabold text-white">
                 <CountUp end={150} suffix="+" duration={2000} />
               </span>
-              <span className="text-xs font-medium text-blue-100 md:text-base">
-                Mitra Industri
-              </span>
+              <span className="text-blue-100 font-medium text-sm md:text-base">Mitra Industri</span>
             </div>
           </div>
         </div>

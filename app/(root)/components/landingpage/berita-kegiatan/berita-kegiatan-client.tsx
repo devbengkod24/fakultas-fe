@@ -234,30 +234,30 @@ export default function BeritaKegiatanClient({ berita }: { berita: BeritaItem[] 
               </span>
             </div> */}
 
-            <div className="relative flex items-center justify-center mb-6 md:mb-10 min-h-10">
-              {/* Filter Pills */}
-              <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+            {/* Filter Pills & Button Selengkapnya (Horizontal Scroll) */}
+            <div className="w-full overflow-x-auto scrollbar-hidden pb-2 mb-10">
+              <div className="flex items-center gap-3 w-max min-w-full justify-start sm:justify-center px-4">
                 {(["Semua", "Prestasi", "Kegiatan kampus"] as const).map((filter) => (
                   <button
                     key={filter}
                     onClick={() => setActiveFilter(filter)}
-                    className={`px-4 py-2 md:px-6 md:py-2.5 rounded-full text-xs md:text-sm font-semibold transition-colors ${activeFilter === filter
-                      ? "bg-secondary text-white border-transparent"
-                      : "bg-white/20 text-white border border-white/30 hover:bg-white/30"
-                      }`}
+                    className={`px-6 py-2.5 rounded-full text-[13px] font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                      activeFilter === filter
+                        ? "bg-secondary text-white border-transparent"
+                        : "bg-white/20 text-white border border-white/30 hover:bg-white/30"
+                    }`}
                   >
                     {filter}
                   </button>
                 ))}
-              </div>
 
-              {/* Lihat semuanya (Desktop) */}
-              <Link
-                href="/berita"
-                className="hidden lg:inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-secondary hover:bg-secondary-400 text-white text-sm font-semibold transition-colors absolute right-0"
-              >
-                Lihat semuanya <ArrowRight className="w-4 h-4" />
-              </Link>
+                <Link
+                  href="/berita"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-secondary hover:bg-secondary-400 text-white text-[13px] font-semibold transition-colors whitespace-nowrap shrink-0"
+                >
+                  Lihat semuanya <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
             {/* 50:50 Grid & List Layout (Mobile & Tablet) */}
