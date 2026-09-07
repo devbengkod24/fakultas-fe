@@ -207,7 +207,7 @@ export default function HeroSliderClient({ images }: Props) {
         </div>
 
         {/* Stats Section Bottom */}
-        <div className="mt-16 flex flex-wrap items-center justify-center gap-8 z-10 relative border-t border-white/20 pt-8">
+        <div className="mt-16 flex flex-wrap items-center justify-start gap-8 z-10 relative border-t border-white/20 pt-8">
           <div className="grid grid-cols-3 gap-4 lg:gap-24">
             <div className="flex flex-col gap-1">
               <span className="text-4xl md:text-5xl font-extrabold text-secondary">
