@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'   # atau 'pnpm'/'yarn' sesuai lock file yang dipakai
+          cache: 'npm'
 
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE }}" > .env
@@ -53,7 +53,9 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -e
-            source ~/.bashrc || source ~/.profile || true
+            # Tambahkan Node.js dan PM2 ke PATH
+            export PATH="/home/topfik/.nvm/versions/node/v24.14.1/bin:$PATH"
+            
             cd ${{ vars.APP_PATH }}
             tar -xzf build.tar.gz
             rm build.tar.gz
