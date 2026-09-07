@@ -1,0 +1,60 @@
+name: Reusable Deploy - FE
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Create build package
+        run: tar -czf build.tar.gz .next public package.json node_modules .env
+
+      - name: Upload build package
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "build.tar.gz"
+          target: ${{ vars.APP_PATH }}
+
+      - name: Extract and restart on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            set -e
+            cd ${{ vars.APP_PATH }}
+            tar -xzf build.tar.gz
+            rm build.tar.gz
+            pm2 restart ${{ vars.PM2_NAME }} || pm2 start npm --name ${{ vars.PM2_NAME }} -- start -- -p ${{ vars.PORT }}
+            pm2 save

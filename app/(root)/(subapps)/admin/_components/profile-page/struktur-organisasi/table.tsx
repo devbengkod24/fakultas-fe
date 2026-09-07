@@ -82,10 +82,17 @@ export function DataStrukturOrganisasi() {
       mutate(["struktur-organisasi", page, limit, searchFromUrl, prodiId]);
 
       handleToastResponse(res);
-    } catch (error) {
+    } catch (error: unknown) {
+      let errorMessage = "Gagal menambahkan Struktur Organisasi";
+      if (error instanceof Error) {
+        const match = error.message.match(/HTTP \d+:\s*(.*)/);
+        if (match) {
+          errorMessage = `Gagal menambahkan Struktur Organisasi (${match[1]})`;
+        }
+      }
       handleToastResponse({
         success: false,
-        message: "Gagal menambahkan Struktur Organisasi",
+        message: errorMessage,
       });
       console.error(error);
     }

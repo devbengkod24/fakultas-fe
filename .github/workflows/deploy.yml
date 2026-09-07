@@ -1,0 +1,14 @@
+name: Build & Deploy STI-FE
+
+on:
+  push:
+    branches:
+      - staging
+      - production
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: ${{ github.ref_name }}
+    secrets: inherit
