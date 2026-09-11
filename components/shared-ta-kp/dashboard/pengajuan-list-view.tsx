@@ -8,7 +8,7 @@ export interface PengajuanListItem {
   id: number;
   name: string;
   studentId: string;
-  gpa?: number;
+  gpa?: number | string; // ipk dari akademik_mahasiswa (decimal) datang sebagai string
   avatar?: string | null;
   title: string;
 }
@@ -89,7 +89,7 @@ export function PengajuanListView({
                 {item.gpa != null && (
                   <>
                     <span className="size-[3px] rounded-full bg-gray-400" />
-                    <span>{item.gpa.toFixed(2)}</span>
+                    <span>{Number(item.gpa).toFixed(2)}</span>
                   </>
                 )}
               </p>
