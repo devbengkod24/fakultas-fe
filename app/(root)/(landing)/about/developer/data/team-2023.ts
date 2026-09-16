@@ -49,12 +49,12 @@ export const team2023 = {
           github: "https://github.com/aiaja",
         },
         {
-          name: "Rindi Fadilah",
-          nim: "A11.2023.15250",
+          name: "Suci Ayu Veronica",
+          nim: "A11.2023.15192",
           role: "Frontend Developer",
-          image: "/assets/landingpage/img/FotoLanyard/Rindi Fadilah - 15250.webp",
-          linkedin: "https://www.linkedin.com/in/rindi-fadilah/",
-          github: "https://github.com/Rindiii1",
+          image: "/assets/landingpage/img/FotoLanyard/Suci Ayu - 15192.webp",
+          linkedin: "www.linkedin.com/in/suciayu",
+          github: " http://github.com/suciayuu",
         },
         {
           name: "Mohamad Aprilian Tanjung",
@@ -71,6 +71,14 @@ export const team2023 = {
           image: "/assets/landingpage/img/FotoLanyard/Sindu Aditya Janadi - 14874.webp",
           linkedin: "https://www.linkedin.com/in/sinduadityajanadi/",
           github: "https://github.com/sinduaditya/",
+        },
+        {
+          name: "Rafiq Susetya Nugraha",
+          nim: "A11.2023.15013",
+          role: "Backend Developer",
+          image: "/assets/landingpage/img/FotoLanyard/Rafiq Susetya - 15013.webp",
+          linkedin: "//www.linkedin.com/in/rafiq-susetya/",
+          github: "//github.com/Rafiqsn",
         },
       ],
     },
@@ -95,7 +103,7 @@ export const team2023 = {
       color: "blue",
       developers: [
         {
-          name: "Yusuh Farhan Abdurrahman",
+          name: "Yusuf Farhan Abdurrahman",
           nim: "A11.2023.15036",
           role: "Fullstack Developer",
           image: "/assets/landingpage/img/FotoLanyard/Yusuf Farhan Abdurrahman - 15036.webp",
@@ -150,7 +158,7 @@ export const team2023 = {
           github: "https://github.com/Rindiii1",
         },
         {
-          name: "Yusuh Farhan Abdurrahman",
+          name: "Yusuf Farhan Abdurrahman",
           nim: "A11.2023.15036",
           role: "Backend Developer",
           image: "/assets/landingpage/img/FotoLanyard/Yusuf Farhan Abdurrahman - 15036.webp",
