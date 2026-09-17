@@ -19,6 +19,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import EmptyState from "@/components/empty-state";
 import { PengajuanMahasiswaService } from "@/api/tugas-akhir";
 import { handleToastResponse } from "@/lib/toast-response";
+import { toast } from "sonner";
 import { StatusTabs } from "./status-tabs";
 import { FilterBar } from "./filter-bar";
 import { StudentCard } from "./student-card";
@@ -39,7 +40,7 @@ const fetcher = (
   status: string,
   jalur: string,
   bidang_kajian: string,
-  sort_order: string,
+  sort_order: string
 ) => {
   const apiMethod = isKoor
     ? PengajuanMahasiswaService.koorGetAll
@@ -53,7 +54,7 @@ const fetcher = (
     status,
     jalur,
     bidang_kajian,
-    sort_order,
+    sort_order
   ).then((res) => res);
 };
 
@@ -117,9 +118,9 @@ export function StudentSubmissionTable({
         status,
         jalur,
         bidang_kajian,
-        sort_order,
+        sort_order
       ),
-    { dedupingInterval: 1000 },
+    { dedupingInterval: 1000 }
   );
 
   const students = response?.data || [];
@@ -190,7 +191,12 @@ export function StudentSubmissionTable({
         const response = await updateMethod(selectedStudent, {
           status: "accepted",
         });
-        handleToastResponse(response);
+
+        if (response.success && response.data?.status === "rejected") {
+          toast.warning(response.message);
+        } else {
+          handleToastResponse(response);
+        }
 
         // Mutate all related cache keys to refresh data
         const cacheKey = isKoor
@@ -272,7 +278,7 @@ export function StudentSubmissionTable({
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-1">
-              <span className="font-semibold capitalize truncate max-w-[200px]">
+              <span className="max-w-[200px] truncate font-semibold capitalize">
                 {student.name?.toLowerCase() || "N/A"}
               </span>
               <span className="text-sm text-muted-foreground">
@@ -281,7 +287,7 @@ export function StudentSubmissionTable({
               {student.email && (
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="h-3 w-3 text-muted-foreground" />
-                  <span className="truncate max-w-[180px]">
+                  <span className="max-w-[180px] truncate">
                     {student.email}
                   </span>
                 </div>
@@ -304,7 +310,7 @@ export function StudentSubmissionTable({
         const judul = row.original.pengajuan?.judul;
         return (
           <div className="max-w-[300px]">
-            <p className="font-medium truncate">{judul || "N/A"}</p>
+            <p className="truncate font-medium">{judul || "N/A"}</p>
           </div>
         );
       },
@@ -382,7 +388,7 @@ export function StudentSubmissionTable({
               return (
                 <Badge
                   variant="outline"
-                  className="bg-muted text-muted-foreground whitespace-nowrap"
+                  className="whitespace-nowrap bg-muted text-muted-foreground"
                 >
                   Dibatalkan Mhs
                 </Badge>
@@ -403,7 +409,7 @@ export function StudentSubmissionTable({
 
         if (status === "pending") {
           return (
-            <div className="flex gap-2 justify-center">
+            <div className="flex justify-center gap-2">
               <Button
                 size="sm"
                 variant="successOutline"
@@ -411,7 +417,7 @@ export function StudentSubmissionTable({
                 onClick={() => handleAccept(student.tugas_akhir_id)}
               >
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-green-600 font-semibold">Diterima</span>
+                <span className="font-semibold text-green-600">Diterima</span>
               </Button>
               <Button
                 size="sm"
@@ -420,7 +426,7 @@ export function StudentSubmissionTable({
                 onClick={() => handleReject(student.tugas_akhir_id)}
               >
                 <XCircle className="h-4 w-4 text-red-500" />
-                <span className="text-red-500 font-semibold">Ditolak</span>
+                <span className="font-semibold text-red-500">Ditolak</span>
               </Button>
             </div>
           );
@@ -439,7 +445,7 @@ export function StudentSubmissionTable({
         subtitle="Terjadi kesalahan saat mengambil data pengajuan mahasiswa."
         button={
           <Button onClick={() => router.refresh()} variant="outline">
-            <RefreshCcw className="size-4 mr-2" />
+            <RefreshCcw className="mr-2 size-4" />
             Coba Lagi
           </Button>
         }
@@ -480,7 +486,7 @@ export function StudentSubmissionTable({
           subtitle="Terjadi kesalahan saat mengambil data pengajuan mahasiswa."
           button={
             <Button onClick={() => router.refresh()} variant="outline">
-              <RefreshCcw className="size-4 mr-2" />
+              <RefreshCcw className="mr-2 size-4" />
               Coba Lagi
             </Button>
           }
