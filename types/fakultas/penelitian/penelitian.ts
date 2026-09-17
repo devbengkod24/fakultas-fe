@@ -34,6 +34,8 @@ export interface Dosen extends DosenDetailExtra {
   riwayat_karir?: RiwayatKarir[];
   riwayat_pendidikan?: RiwayatPendidikan[];
   jadwal_mengajar?: JadwalMengajar[];
+  pengabdian?: Pengabdian[];
+  kekayaan_intelektual?: KekayaanIntelektual[];
   mahasiswa_bimbingan?: MahasiswaBimbingan[];
   articles?: Publication[];
   researches?: Research[];
@@ -42,27 +44,31 @@ export interface Dosen extends DosenDetailExtra {
 
 export interface RiwayatKarir {
   id: number;
-  tahun: string;
-  posisi: string;
-  instasi: string;
+  keterangan: string;
 }
 
 export interface RiwayatPendidikan {
   id: number;
-  tahun: string;
-  jenjang: string;
-  programStudi: string;
-  instasi: string;
+  keterangan: string;
 }
 
 export interface JadwalMengajar {
   id: number;
   mata_kuliah: string;
   kelompok: string;
-  sks: number;
   hari: string;
   jam: string;
   ruang: string;
+}
+
+export interface Pengabdian {
+  id: number;
+  keterangan: string;
+}
+
+export interface KekayaanIntelektual {
+  id: number;
+  keterangan: string;
 }
 
 export interface MahasiswaBimbingan {

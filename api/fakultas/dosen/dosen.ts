@@ -46,6 +46,16 @@ const DosenFakultas = ({
         .catch((error) => { throw new Error(`Error get all dosen: ${error.message}`); });
     },
 
+    sync: () => {
+      const headers = config();
+      return fetch(`${baseUrl}${dosenEndpoint}/sync`, {
+        method: "GET",
+        headers: headers,
+      })
+        .then((response) => response.json())
+        .catch((error) => { throw new Error(`Error sync dosen: ${error.message}`); });
+    },
+
     getById: (id: number) => {
       const headers = config();
       return fetch(`${baseUrl}${dosenEndpoint}/${id}`, {
@@ -56,6 +66,72 @@ const DosenFakultas = ({
         .catch((error) => { throw new Error(`Error fetching dosen by ID: ${error.message}`); });
     },
 
+    // ── CRUD data biografis dosen (riwayat karir/pendidikan, pengabdian, kekayaan intelektual) ──
+    createKeterangan: (dosenId: number, type: string, keterangan: string) => {
+      const headers = config();
+      return fetch(`${baseUrl}${dosenEndpoint}/${dosenId}/${type}`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({ keterangan }),
+      })
+        .then((response) => response.json())
+        .catch((error) => { throw new Error(`Error creating ${type}: ${error.message}`); });
+    },
+
+    updateKeterangan: (dosenId: number, type: string, itemId: number, keterangan: string) => {
+      const headers = config();
+      return fetch(`${baseUrl}${dosenEndpoint}/${dosenId}/${type}/${itemId}`, {
+        method: "PUT",
+        headers: headers,
+        body: JSON.stringify({ keterangan }),
+      })
+        .then((response) => response.json())
+        .catch((error) => { throw new Error(`Error updating ${type}: ${error.message}`); });
+    },
+
+    deleteKeterangan: (dosenId: number, type: string, itemId: number) => {
+      const headers = config();
+      return fetch(`${baseUrl}${dosenEndpoint}/${dosenId}/${type}/${itemId}`, {
+        method: "DELETE",
+        headers: headers,
+      })
+        .then((response) => response.json())
+        .catch((error) => { throw new Error(`Error deleting ${type}: ${error.message}`); });
+    },
+
+    // ── CRUD Jadwal Mengajar ──
+    createJadwalMengajar: (dosenId: number, data: { hari: string; jam: string; kelas: string; matkul: string; ruang: string }) => {
+      const headers = config();
+      return fetch(`${baseUrl}${dosenEndpoint}/${dosenId}/jadwal-mengajar`, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .catch((error) => { throw new Error(`Error creating jadwal mengajar: ${error.message}`); });
+    },
+
+    updateJadwalMengajar: (dosenId: number, itemId: number, data: { hari: string; jam: string; kelas: string; matkul: string; ruang: string }) => {
+      const headers = config();
+      return fetch(`${baseUrl}${dosenEndpoint}/${dosenId}/jadwal-mengajar/${itemId}`, {
+        method: "PUT",
+        headers: headers,
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .catch((error) => { throw new Error(`Error updating jadwal mengajar: ${error.message}`); });
+    },
+
+    deleteJadwalMengajar: (dosenId: number, itemId: number) => {
+      const headers = config();
+      return fetch(`${baseUrl}${dosenEndpoint}/${dosenId}/jadwal-mengajar/${itemId}`, {
+        method: "DELETE",
+        headers: headers,
+      })
+        .then((response) => response.json())
+        .catch((error) => { throw new Error(`Error deleting jadwal mengajar: ${error.message}`); });
+    },
+
     getProdi: () => {
       const headers = config();
       return fetch(`${baseUrl}${prodiEndpoint}?limit=100`, {
@@ -64,6 +140,16 @@ const DosenFakultas = ({
       })
         .then((response) => response.json())
         .catch((error) => { throw new Error(`Error fetching prodi: ${error.message}`); });
+    },
+
+    getJabatanOptions: () => {
+      const headers = config();
+      return fetch(`${baseUrl}${dosenEndpoint}/jabatan-options`, {
+        method: "GET",
+        headers: headers,
+      })
+        .then((response) => response.json())
+        .catch((error) => { throw new Error(`Error fetching jabatan options: ${error.message}`); });
     },
 
     update: (id: number, data: {

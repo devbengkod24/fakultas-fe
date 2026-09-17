@@ -176,16 +176,33 @@ export default function DetailDosenFetcher({
       kuota_ta_baru: 0,
     },
 
-    /* ── DUMMY (preview tampilan, belum ada API-nya) ── */
-    riwayat_karir: [
-      { id: 1, tahun: "2020 - Sekarang", posisi: "Lektor Kepala", instasi: "Universitas Dian Nuswantoro" },
-    ],
-    riwayat_pendidikan: [
-      { id: 1, tahun: "2015", jenjang: "Doktor (S3)", programStudi: "Ilmu Komputer", instasi: "Universitas Gadjah Mada" },
-    ],
-    jadwal_mengajar: [
-      { id: 1, mata_kuliah: "Algoritma dan Pemrograman", kelompok: "A11.4818", sks: 3, hari: "Senin", jam: "08:00 - 10:30", ruang: "Ruang 301" },
-    ],
+    /* ── Riwayat karir/pendidikan/jadwal mengajar dari sync API kampus.
+       keterangan itu free-text apa adanya (bukan field terstruktur), lihat
+       fakultas-sync/docs/sync-dosen-plan.md Fase 4B. ── */
+    riwayat_karir: (rawDosen.riwayat_karir ?? []).map((r: any) => ({
+      id: r.id,
+      keterangan: r.keterangan,
+    })),
+    riwayat_pendidikan: (rawDosen.riwayat_pendidikan ?? []).map((r: any) => ({
+      id: r.id,
+      keterangan: r.keterangan,
+    })),
+    jadwal_mengajar: (rawDosen.jadwal_mengajar ?? []).map((j: any) => ({
+      id: j.id,
+      mata_kuliah: j.matkul,
+      kelompok: j.kelas,
+      hari: j.hari,
+      jam: j.jam,
+      ruang: j.ruang,
+    })),
+    pengabdian: (rawDosen.pengabdian ?? []).map((p: any) => ({
+      id: p.id,
+      keterangan: p.keterangan,
+    })),
+    kekayaan_intelektual: (rawDosen.kekayaan_intelektual ?? []).map((k: any) => ({
+      id: k.id,
+      keterangan: k.keterangan,
+    })),
   };
 
   return <DetailDosenClient 
