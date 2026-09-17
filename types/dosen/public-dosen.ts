@@ -3,6 +3,20 @@ export interface PublicDosenHomeBase {
   nama: string;
 }
 
+export interface PublicJadwalMengajar {
+  id: number;
+  hari: string;
+  jam: string;
+  kelas: string;
+  matkul: string;
+  ruang: string;
+}
+
+export interface PublicKeterangan {
+  id: number;
+  keterangan: string;
+}
+
 export interface PublicDosen {
   id: number;
   nama: string | null;
@@ -13,10 +27,12 @@ export interface PublicDosen {
   status_staff: string | null;
   golongan: string | null;
   email: string | null;
-  email_alternatif: string | null;
   penulis_id: number | null;
   linked_to_publikasi: boolean;
   avatar: string | null;
+  jadwal_mengajar?: PublicJadwalMengajar[];
+  pengabdian?: PublicKeterangan[];
+  kekayaan_intelektual?: PublicKeterangan[];
 }
 
 export interface StandardResponse<T> {

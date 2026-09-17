@@ -193,7 +193,7 @@ export default function LandingDetailDosenFetcher({
     prodi_tugas: [],
     bidang_kajian: "",
     telepon: "",
-    email_alternatif: authorData?.email_alternatif || "",
+    email_alternatif: "",
     golongan: authorData?.golongan || "-",
     scholar_link: "",
     status: authorData?.status_staff || "Aktif",
@@ -201,10 +201,25 @@ export default function LandingDetailDosenFetcher({
     articles: publikasi,
     researches: penelitian,
     community_services: pengabdian,
+    jadwal_mengajar: (authorData?.jadwal_mengajar ?? []).map((j) => ({
+      id: j.id,
+      mata_kuliah: j.matkul,
+      kelompok: j.kelas,
+      hari: j.hari,
+      jam: j.jam,
+      ruang: j.ruang,
+    })),
+    pengabdian: (authorData?.pengabdian ?? []).map((p) => ({
+      id: p.id,
+      keterangan: p.keterangan,
+    })),
+    kekayaan_intelektual: (authorData?.kekayaan_intelektual ?? []).map((k) => ({
+      id: k.id,
+      keterangan: k.keterangan,
+    })),
     // Sections yang memang tidak tersedia di publik (hidden via conditional render):
     riwayat_karir: [],
     riwayat_pendidikan: [],
-    jadwal_mengajar: [],
     mahasiswa_bimbingan: [],
     stats: {
       jumlah_lulusan: 0,

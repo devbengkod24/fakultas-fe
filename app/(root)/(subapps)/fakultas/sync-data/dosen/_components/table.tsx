@@ -1,133 +1,131 @@
 "use client";
 
-import { DataTable } from "@/components/data-table";
-import { FilterSyncDosen } from "./filter";
-import { Columns, SyncDosen } from "./column";
-import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import useSWR, { mutate } from "swr";
+import { toast } from "sonner";
+import { AlertCircle, RefreshCw, Users } from "lucide-react";
 
-// ─── Dummy Data ────────────────────────────────────────────────────────────────
+import { DataTable } from "@/components/data-table";
+import { Button } from "@/components/ui/button";
+import SearchControl from "@/components/search-control";
+import EmptyState from "@/components/empty-state";
+import { DosenFakultasService } from "@/api";
+import { handleToastResponse } from "@/lib/toast-response";
+import { Columns, SyncDosen } from "./column";
 
-const dummySyncDosen: SyncDosen[] = [
-  {
-    id: 1,
-    npp: "198501012010121001",
-    nama: "Prof. Dr. Ahmad Fauzi, M.Kom.",
-    email: "ahmad.fauzi@university.ac.id",
-    prodi_homebase: "Informatika",
-    jabatan: "Guru Besar",
-    status: "Aktif",
-  },
-  {
-    id: 2,
-    npp: "198601022011022002",
-    nama: "Dr. Siti Nurhaliza, M.T.",
-    email: "siti.nurhaliza@university.ac.id",
-    prodi_homebase: "Informatika",
-    jabatan: "Lektor Kepala",
-    status: "Aktif",
-  },
-  {
-    id: 3,
-    npp: "197803032008012003",
-    nama: "Prof. Dr. Budi Santoso, M.M.",
-    email: "budi.santoso@university.ac.id",
-    prodi_homebase: "Sistem Informasi",
-    jabatan: "Guru Besar",
-    status: "Aktif",
-  },
-  {
-    id: 4,
-    npp: "198907042012032004",
-    nama: "Dr. Rina Susanti, M.Kom.",
-    email: "rina.susanti@university.ac.id",
-    prodi_homebase: "Sistem Informasi",
-    jabatan: "Lektor Kepala",
-    status: "Aktif",
-  },
-  {
-    id: 5,
-    npp: "199105052013042005",
-    nama: "Dr. Wahyu Nugroho, M.Sc.",
-    email: "wahyu.nugroho@university.ac.id",
-    prodi_homebase: "Teknik Komputer",
-    jabatan: "Lektor",
-    status: "Aktif",
-  },
-  {
-    id: 6,
-    npp: "198308062010062006",
-    nama: "Dr. Diana Putri, M.T.",
-    email: "diana.putri@university.ac.id",
-    prodi_homebase: "Informatika",
-    jabatan: "Lektor",
-    status: "Aktif",
-  },
-  {
-    id: 7,
-    npp: "199210072014032007",
-    nama: "Eko Prasetyo, M.Kom.",
-    email: "eko.prasetyo@university.ac.id",
-    prodi_homebase: "Teknik Komputer",
-    jabatan: "Asisten Ahli",
-    status: "Aktif",
-  },
-  {
-    id: 8,
-    npp: "198412082009012008",
-    nama: "Dr. Lestari Handoko, M.Si.",
-    email: "lestari.handoko@university.ac.id",
-    prodi_homebase: "Sistem Informasi",
-    jabatan: "Lektor Kepala",
-    status: "Cuti",
-  },
-];
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function adaptSyncDosen(d: any): SyncDosen {
+  const prodiHomebase =
+    typeof d.prodi_homebase === "object" && d.prodi_homebase !== null
+      ? d.prodi_homebase.nama
+      : d.prodi_homebase;
+
+  return {
+    id: d.dosen_id ?? d.user_id,
+    npp: d.npp ?? "-",
+    nama: d.name,
+    email: d.email ?? "-",
+    prodi_homebase: prodiHomebase ?? "-",
+    jabatan: d.jabatan_fungsional ?? "-",
+    status: d.status_dosen ?? "-",
+  };
+}
+
+const fetcher = (page: number, limit: number, search: string) =>
+  DosenFakultasService.getAll(page, limit, search);
 
 export function TableSyncDosen() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const filteredData = dummySyncDosen.filter(
-    (dosen) =>
-      dosen.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dosen.npp.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dosen.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const search = searchParams.get("search") || "";
+  const page = Number(searchParams.get("page")) || 1;
+  const limit = Number(searchParams.get("limit")) || 10;
+
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const mutateKey = ["sync-dosen-list", page, limit, search];
+
+  const {
+    data: response,
+    error,
+    isLoading,
+  } = useSWR(mutateKey, () => fetcher(page, limit, search), {
+    dedupingInterval: 1000,
+  });
+
+  const rawData = response?.data?.data ?? [];
+  const data: SyncDosen[] = Array.isArray(rawData) ? rawData.map(adaptSyncDosen) : [];
+
+  const pagination = response?.data?.meta?.pagination;
+  const lastPage = pagination?.last_page ?? 1;
+  const totalData = pagination?.total ?? 0;
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      const res = await DosenFakultasService.sync();
+      mutate(mutateKey);
+      if (res?.success === false) {
+        toast.error(res.message || "Gagal sinkronisasi data dosen");
+      } else {
+        handleToastResponse(res);
+      }
+    } catch {
+      toast.error("Gagal melakukan sinkronisasi data dosen");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  if (error) {
+    return (
+      <EmptyState
+        icon={AlertCircle}
+        title="Gagal memuat data"
+        subtitle="Terjadi kesalahan saat mengambil data dosen. Silakan coba lagi."
+        button={<Button onClick={() => router.refresh()}>Coba Lagi</Button>}
+      />
+    );
+  }
+
+  const hasData = data.length > 0;
 
   return (
     <div className="w-full flex flex-col gap-3">
       <div className="flex flex-col sm:flex-row justify-between gap-3">
-        <div className="flex-1 max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari nama dosen..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button className="bg-primary hover:bg-primary/90 text-white">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Sync Data
-          </Button>
-        </div>
+        <SearchControl placeholder="Cari nama dosen..." className="flex-1 max-w-md" />
+        <Button
+          onClick={handleSync}
+          disabled={isSyncing}
+          className="bg-primary hover:bg-primary/90 text-white"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? "animate-spin" : ""}`} />
+          Sync Data
+        </Button>
       </div>
-      <DataTable
-        columns={Columns}
-        data={filteredData}
-        loading={false}
-        pagination={{
-          currentPage: 1,
-          lastPage: 1,
-          limit: 10,
-          total: filteredData.length,
-        }}
-      />
+
+      {!isLoading && !hasData ? (
+        <EmptyState
+          icon={Users}
+          title="Belum ada data dosen"
+          subtitle="Belum ada dosen yang terdaftar pada sistem."
+          className="h-[400px]"
+        />
+      ) : (
+        <DataTable
+          columns={Columns}
+          data={data}
+          loading={isLoading}
+          pagination={{
+            currentPage: page,
+            lastPage,
+            limit,
+            total: totalData,
+          }}
+        />
+      )}
     </div>
   );
 }
