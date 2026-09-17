@@ -31,6 +31,13 @@ export function FilterDosen({ hideProdi = false }: FilterDosenProps) {
   );
   const prodiList = prodiResponse?.data?.data ?? [];
 
+  const { data: jabatanResponse } = useSWR(
+    "dosen-jabatan-options",
+    () => DosenFakultasService.getJabatanOptions(),
+    { revalidateOnFocus: false }
+  );
+  const jabatanList: string[] = jabatanResponse?.data ?? [];
+
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
@@ -99,11 +106,11 @@ export function FilterDosen({ hideProdi = false }: FilterDosenProps) {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Semua Jabatan</SelectItem>
-          <SelectItem value="Guru Besar">Guru Besar</SelectItem>
-          <SelectItem value="Lektor Kepala">Lektor Kepala</SelectItem>
-          <SelectItem value="Lektor">Lektor</SelectItem>
-          <SelectItem value="Asisten Ahli">Asisten Ahli</SelectItem>
-          <SelectItem value="Tenaga Pengajar">Tenaga Pengajar</SelectItem>
+          {jabatanList.map((j) => (
+            <SelectItem key={j} value={j}>
+              {j}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>
