@@ -19,6 +19,7 @@ export interface Dosen {
   telepon: string | null;
   prodi_homebase: Prodi;
   prodi_tugas: Prodi[];
+  status_dosen?: string | null;
 }
 
 export type DosenFakultas = Dosen;

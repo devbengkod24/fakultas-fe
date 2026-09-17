@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import DashboardHeader from "@/components/dashboard-header";
+import withAuth from "@/app/(root)/hoc/withAuth";
 import { TableSyncDosen } from "./_components/table";
 
 const SyncDataDosenPage = () => {
@@ -25,4 +28,4 @@ const SyncDataDosenPage = () => {
   );
 };
 
-export default SyncDataDosenPage;
+export default withAuth(SyncDataDosenPage, "fakultas", ["super_fakultas"]);
