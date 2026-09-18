@@ -36,6 +36,7 @@ const getStaticSidebarItems = () => [
       { name: "Data Dosen", url: "/fakultas/sync-data/dosen" },
       { name: "Mahasiswa", url: "/fakultas/sync-data/mahasiswa" },
       { name: "Mata Kuliah", url: "/fakultas/sync-data/mata-kuliah" },
+      { name: "Kelompok Matkul", url: "/fakultas/sync-data/kelompok-matkul" },
       { name: "KRS Mahasiswa", url: "/fakultas/sync-data/krs-mahasiswa" },
       { name: "Publikasi", url: "/fakultas/sync-data/publikasi" },
     ],

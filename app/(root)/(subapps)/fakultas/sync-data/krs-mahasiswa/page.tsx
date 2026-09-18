@@ -29,12 +29,16 @@ import { AlertCircle } from "lucide-react";
 
 type KrsRow = {
   id: number;
-  nama_krs: string;
-  nim: string;
-  nama_mahasiswa: string;
-  prodi_id: number;
-  tahun_ajaran: string | null;
-  created_at: string;
+  mahasiswa: { nama: string; nim: string };
+  mata_kuliah: { nama: string; kode?: string };
+  kelompok: { kode: string };
+  semester_ambil: string;
+  status: string;
+  absen: number;
+  nilai_akhir_angka: number;
+  nilai_akhir_huruf: string;
+  nilai_uts?: number;
+  nilai_uas?: number;
 };
 
 const fetcher = (page: number, limit: number, search: string, prodi: string) =>
@@ -52,12 +56,11 @@ const columns: ColumnDef<KrsRow>[] = [
     cell: ({ row }) => <div className="text-center w-8">{row.index + 1}</div>,
   },
   {
-    accessorKey: "nama_mahasiswa",
-    header: "Nama Mahasiswa",
+    accessorKey: "mahasiswa",
+    header: "Mahasiswa",
     cell: ({ row }) => {
-      const nama = row.getValue("nama_mahasiswa") as string;
-      const nim = row.original.nim;
-      const initial = nama?.charAt(0)?.toUpperCase() || "?";
+      const mhs = row.original.mahasiswa || { nama: "?", nim: "?" };
+      const initial = mhs.nama?.charAt(0)?.toUpperCase() || "?";
 
       return (
         <div className="flex items-center gap-3 py-1">
@@ -67,58 +70,79 @@ const columns: ColumnDef<KrsRow>[] = [
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="font-semibold text-sm">{nama}</span>
-            <span className="text-sm text-muted-foreground">{nim}</span>
+            <span className="font-semibold text-sm">{mhs.nama}</span>
+            <span className="text-sm text-muted-foreground">{mhs.nim}</span>
           </div>
         </div>
       );
     },
   },
   {
-    accessorKey: "nim",
-    header: "NIM",
-  },
-  {
-    accessorKey: "nama_krs",
-    header: "Jenis KRS",
+    accessorKey: "mata_kuliah",
+    header: "Mata Kuliah",
     cell: ({ row }) => {
-      const krs = row.getValue("nama_krs") as string;
+      const mk = row.original.mata_kuliah || { nama: "-", kode: "-" };
       return (
-        <Badge
-          variant="outline"
-          className={
-            krs === "TA1"
-              ? "bg-blue-100 text-blue-700 border-blue-200 font-medium"
-              : krs === "TA2"
-              ? "bg-purple-100 text-purple-700 border-purple-200 font-medium"
-              : "bg-gray-100 text-gray-600 border-gray-200 font-medium"
-          }
-        >
-          {krs}
-        </Badge>
+        <div className="flex flex-col">
+          <span className="font-semibold text-sm">{mk.nama}</span>
+          <span className="text-sm text-muted-foreground">{mk.kode || "-"}</span>
+        </div>
       );
     },
   },
   {
-    accessorKey: "tahun_ajaran",
-    header: "Tahun Ajaran",
-    cell: ({ row }) => (
-      <span className="text-sm">{row.getValue("tahun_ajaran") || "-"}</span>
-    ),
+    accessorKey: "kelompok",
+    header: "Kelas & SMT",
+    cell: ({ row }) => {
+      const klp = row.original.kelompok?.kode || "-";
+      const smt = row.original.semester_ambil || "-";
+      return (
+        <div className="flex flex-col">
+          <span className="font-bold text-sm">{klp}</span>
+          <span className="text-sm text-muted-foreground">Smt {smt}</span>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "created_at",
-    header: "Tanggal Dibuat",
+    accessorKey: "status",
+    header: "Status & Absen",
     cell: ({ row }) => {
-      const date = row.getValue("created_at") as string;
-      if (!date) return <span className="text-sm">-</span>;
+      const status = row.original.status || "-";
+      const absen = row.original.absen || 0;
       return (
-        <span className="text-sm">
-          {new Date(date).toLocaleDateString("id-ID", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
+        <div className="flex flex-col gap-1 items-start">
+          <Badge variant={status === "Ulang" ? "destructive" : "default"}>
+            {status}
+          </Badge>
+          <span className="text-sm text-muted-foreground">{absen}x Hadir</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "rincian_nilai",
+    header: "Rincian Nilai",
+    cell: ({ row }) => {
+      const uts = row.original.nilai_uts ?? "-";
+      const uas = row.original.nilai_uas ?? "-";
+      return (
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground">UTS: {uts}</span>
+          <span className="text-xs text-muted-foreground">UAS: {uas}</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "nilai_akhir_angka",
+    header: "Nilai Akhir",
+    cell: ({ row }) => {
+      const angka = row.original.nilai_akhir_angka ?? 0;
+      const huruf = row.original.nilai_akhir_huruf ?? "-";
+      return (
+        <span className="font-semibold">
+          {angka} ({huruf})
         </span>
       );
     },
@@ -132,7 +156,7 @@ const SyncDataKrsMahasiswaPage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProdi, setSelectedProdi] = useState("all");
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncPhase, setSyncPhase] = useState<"idle" | "kelompok" | "krs">("idle");
 
   const mutateKey = ["krs-list", page, limit, searchTerm, selectedProdi];
 
@@ -149,16 +173,20 @@ const SyncDataKrsMahasiswaPage = () => {
   const totalData = pagination?.total ?? 0;
 
   const handleSyncData = async () => {
-    setIsSyncing(true);
     try {
-      const res = await FakultasSyncService.syncKrsKhs({
-        prodi: selectedProdi !== "all" ? selectedProdi : "A11",
-      });
+      const prodi = selectedProdi !== "all" ? selectedProdi : "A11";
+
+      setSyncPhase("kelompok");
+      await FakultasSyncService.syncKelompokMatkul({ prodi });
+
+      setSyncPhase("krs");
+      const res = await FakultasSyncService.syncKrsKhs({ prodi });
+
       handleToastResponse(res);
-    } catch {
-      toast.error("Gagal melakukan sinkronisasi data KRS");
+    } catch (err: any) {
+      toast.error(err?.message || "Gagal melakukan sinkronisasi data KRS");
     } finally {
-      setIsSyncing(false);
+      setSyncPhase("idle");
     }
   };
 
@@ -235,11 +263,15 @@ const SyncDataKrsMahasiswaPage = () => {
             </Select>
           </div>
 
-          <Button onClick={handleSyncData} disabled={isSyncing} className="h-10">
+          <Button onClick={handleSyncData} disabled={syncPhase !== "idle"} className="h-10 min-w-[200px]">
             <RefreshCw
-              className={`mr-2 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
+              className={`mr-2 h-4 w-4 ${syncPhase !== "idle" ? "animate-spin" : ""}`}
             />
-            {isSyncing ? "Menyinkronkan..." : "Sync Data"}
+            {syncPhase === "idle"
+              ? "Sync Data"
+              : syncPhase === "kelompok"
+              ? "Syncing Kelompok Matkul..."
+              : "Syncing KRS/KHS..."}
           </Button>
         </div>
       </div>
