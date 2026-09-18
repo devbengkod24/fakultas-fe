@@ -19,7 +19,7 @@ const MataKuliahFakultas = ({
   baseUrl: string;
   config: () => Headers;
 }) => {
-  const endpoint = "/cms/mata-kuliah";
+  const endpoint = "/cms/super-fakultas/mata-kuliah";
 
   return {
     getAll: (params?: { semester?: string; prodi_id?: string }) => {

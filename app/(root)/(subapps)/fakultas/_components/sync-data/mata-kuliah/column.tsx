@@ -59,6 +59,8 @@ export const Columns = (
           badgeStyle = "border-blue-200 bg-blue-50 text-blue-700";
         } else if (tipe === "prodi") {
           badgeStyle = "border-green-200 bg-green-50 text-green-700";
+        } else if (tipe === "peminatan") {
+          badgeStyle = "border-purple-200 bg-purple-50 text-purple-700";
         }
 
         // Capitalize first letter for display
@@ -78,7 +80,7 @@ export const Columns = (
         const item = row.original;
         return (
           <span className="text-sm text-gray-700">
-            {item.prodi?.nama || `Prodi ID: ${item.prodi_id}`}
+            {item.prodi?.nama || (item.prodi_id !== null ? `Prodi ID: ${item.prodi_id}` : "—")}
           </span>
         );
       },

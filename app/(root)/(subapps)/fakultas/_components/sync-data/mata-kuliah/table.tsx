@@ -23,8 +23,10 @@ function adaptMataKuliah(raw: any): MataKuliahSync {
     name: raw.name,
     sks: raw.sks,
     semester_ditawarkan: raw.semester ?? 0,
-    tipe_mk: "prodi",
-    prodi_id: raw.prodi_id,
+    tipe_mk: raw.tipe_mk ?? "prodi",
+    prodi_id: raw.prodi_id ?? null,
+    peminatan_id: raw.peminatan_id ?? null,
+    prodi: raw.prodi ?? undefined,
   };
 }
 
@@ -40,6 +42,8 @@ export function DataDaftarMataKuliah() {
   const limit = Number(searchParams.get("limit")) || 10;
   const searchFromUrl = searchParams.get("search") || "";
   const tipeFromUrl = searchParams.get("tipe") || "all";
+  const prodiFromUrl = searchParams.get("prodi") || "all";
+  const semesterFromUrl = searchParams.get("semester") || "all";
 
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -62,11 +66,45 @@ export function DataDaftarMataKuliah() {
     }
 
     if (tipeFromUrl !== "all") {
-      filtered = filtered.filter((c) => c.tipe_mk === tipeFromUrl);
+      if (tipeFromUrl === "peminatan") {
+        filtered = filtered.filter(
+          (c) => c.tipe_mk === "peminatan" || c.peminatan_id != null
+        );
+      } else {
+        filtered = filtered.filter((c) => c.tipe_mk === tipeFromUrl);
+      }
+    }
+
+    if (prodiFromUrl !== "all") {
+      filtered = filtered.filter((c) => String(c.prodi_id) === prodiFromUrl);
+    }
+
+    if (semesterFromUrl !== "all") {
+      filtered = filtered.filter(
+        (c) => String(c.semester_ditawarkan) === semesterFromUrl
+      );
     }
 
     return filtered;
-  }, [allData, searchFromUrl, tipeFromUrl]);
+  }, [allData, searchFromUrl, tipeFromUrl, prodiFromUrl, semesterFromUrl]);
+
+  const prodiOptions = useMemo(() => {
+    if (!allData) return [];
+    const map = new Map<number | null, string>();
+    for (const item of allData) {
+      const key = item.prodi_id ?? null;
+      if (!map.has(key)) {
+        map.set(key, item.prodi?.nama || (key === null ? "Tanpa Program Studi" : `Prodi ID: ${key}`));
+      }
+    }
+    return Array.from(map.entries())
+      .map(([id, nama]) => ({ id, nama }))
+      .sort((a, b) => {
+        if (a.id === null) return 1;
+        if (b.id === null) return -1;
+        return a.nama.localeCompare(b.nama);
+      });
+  }, [allData]);
 
   const totalData = filteredData.length;
   const totalPages = Math.ceil(totalData / limit) || 1;
@@ -89,7 +127,7 @@ export function DataDaftarMataKuliah() {
   if (error) {
     return (
       <div className="w-full flex flex-col gap-3">
-        <FilterSyncMataKuliah onSync={handleSync} />
+        <FilterSyncMataKuliah onSync={handleSync} prodiOptions={prodiOptions} />
         <EmptyState
           icon={AlertTriangle}
           title="Terjadi Kesalahan"
@@ -102,7 +140,7 @@ export function DataDaftarMataKuliah() {
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <FilterSyncMataKuliah onSync={handleSync} />
+      <FilterSyncMataKuliah onSync={handleSync} prodiOptions={prodiOptions} />
 
       {!isLoading && paginatedData.length === 0 ? (
         <EmptyState

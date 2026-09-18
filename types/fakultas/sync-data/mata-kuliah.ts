@@ -6,7 +6,8 @@ export interface MataKuliahSync {
   name: string;
   sks: number;
   semester_ditawarkan: number;
-  tipe_mk: "nasional" | "fakultas" | "prodi";
-  prodi_id: number;
+  tipe_mk: "nasional" | "fakultas" | "prodi" | "umum" | "peminatan" | string;
+  prodi_id: number | null;
+  peminatan_id?: number | null;
   prodi?: ProdiData;
 }
