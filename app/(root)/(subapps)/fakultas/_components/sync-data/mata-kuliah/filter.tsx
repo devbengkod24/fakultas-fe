@@ -15,9 +15,10 @@ import { RefreshCcw } from "lucide-react";
 
 interface FilterSyncMataKuliahProps {
   onSync?: () => Promise<void>;
+  prodiOptions?: { id: number | null; nama: string }[];
 }
 
-export function FilterSyncMataKuliah({ onSync }: FilterSyncMataKuliahProps) {
+export function FilterSyncMataKuliah({ onSync, prodiOptions = [] }: FilterSyncMataKuliahProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -25,6 +26,8 @@ export function FilterSyncMataKuliah({ onSync }: FilterSyncMataKuliahProps) {
   const [isSyncingLocal, setIsSyncingLocal] = useState(false);
 
   const filterTipe = searchParams.get("tipe") || "all";
+  const filterProdi = searchParams.get("prodi") || "all";
+  const filterSemester = searchParams.get("semester") || "all";
 
   const updateQueryParams = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -72,6 +75,43 @@ export function FilterSyncMataKuliah({ onSync }: FilterSyncMataKuliahProps) {
             <SelectItem value="nasional" className="text-xs">Nasional</SelectItem>
             <SelectItem value="fakultas" className="text-xs">Fakultas</SelectItem>
             <SelectItem value="prodi" className="text-xs">Prodi</SelectItem>
+            <SelectItem value="peminatan" className="text-xs">Peminatan</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Filter Program Studi */}
+        <Select
+          value={filterProdi}
+          onValueChange={(val) => updateQueryParams("prodi", val)}
+        >
+          <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs font-normal">
+            <SelectValue placeholder="Program Studi" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all" className="text-xs">Semua Program Studi</SelectItem>
+            {prodiOptions.map((p) => (
+              <SelectItem key={p.id} value={String(p.id)} className="text-xs">
+                {p.nama}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Filter Semester Ditawarkan */}
+        <Select
+          value={filterSemester}
+          onValueChange={(val) => updateQueryParams("semester", val)}
+        >
+          <SelectTrigger className="w-full sm:w-auto sm:min-w-[180px] h-9 text-xs font-normal">
+            <SelectValue placeholder="Semester" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all" className="text-xs">Semester Ditawarkan</SelectItem>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+              <SelectItem key={sem} value={String(sem)} className="text-xs">
+                Semester {sem}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
