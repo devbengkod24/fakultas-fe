@@ -26,7 +26,7 @@ import { Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { MahasiswaFakultasService, ProdiFakultasService } from "@/api/fakultas";
 import type { Mahasiswa } from "@/api/fakultas/mahasiswa";
@@ -207,8 +207,16 @@ const columns: ColumnDef<MahasiswaRow>[] = [
 
 const SyncDataMahasiswaPage = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
+
+  const resetPage = () => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", "1");
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProdi, setSelectedProdi] = useState("all");
@@ -309,19 +317,28 @@ const SyncDataMahasiswaPage = () => {
       />
 
       <div className="mt-4 flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
-        <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Cari nama atau NIM..."
-              className="h-10 pl-9"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+        <div className="relative w-full md:w-64">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Cari nama atau NIM..."
+            className="h-10 pl-9"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              resetPage();
+            }}
+          />
+        </div>
 
-          <Select value={selectedProdi} onValueChange={setSelectedProdi}>
+        <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+          <Select
+            value={selectedProdi}
+            onValueChange={(value) => {
+              setSelectedProdi(value);
+              resetPage();
+            }}
+          >
             <SelectTrigger className="h-10 w-full md:w-48">
               <SelectValue placeholder="Semua Prodi" />
             </SelectTrigger>
@@ -334,18 +351,18 @@ const SyncDataMahasiswaPage = () => {
               ))}
             </SelectContent>
           </Select>
-        </div>
 
-        <Button
-          onClick={() => setIsSyncDialogOpen(true)}
-          disabled={isSyncing}
-          className="h-10"
-        >
-          <RefreshCw
-            className={`mr-2 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
-          />
-          {isSyncing ? "Menyinkronkan..." : "Sync Data"}
-        </Button>
+          <Button
+            onClick={() => setIsSyncDialogOpen(true)}
+            disabled={isSyncing}
+            className="h-10"
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
+            />
+            {isSyncing ? "Menyinkronkan..." : "Sync Data"}
+          </Button>
+        </div>
       </div>
 
       <div className="mt-3">
