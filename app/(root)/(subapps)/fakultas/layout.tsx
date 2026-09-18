@@ -31,13 +31,13 @@ const getStaticSidebarItems = () => [
     url: "/fakultas/sync-data",
     icon: RefreshCw,
     subItems: [
+      { name: "Prodi", url: "/fakultas/sync-data/prodi" },
       { name: "Periode", url: "/fakultas/sync-data/periode" },
-      { name: "Publikasi", url: "/fakultas/sync-data/publikasi" },
-      { name: "Mata Kuliah", url: "/fakultas/sync-data/mata-kuliah" },
-      { name: "KRS Mahasiswa", url: "/fakultas/sync-data/krs-mahasiswa" },
       { name: "Data Dosen", url: "/fakultas/sync-data/dosen" },
       { name: "Mahasiswa", url: "/fakultas/sync-data/mahasiswa" },
-
+      { name: "Mata Kuliah", url: "/fakultas/sync-data/mata-kuliah" },
+      { name: "KRS Mahasiswa", url: "/fakultas/sync-data/krs-mahasiswa" },
+      { name: "Publikasi", url: "/fakultas/sync-data/publikasi" },
     ],
   },
   {

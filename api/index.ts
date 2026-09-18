@@ -4,7 +4,7 @@ import { getCookie } from "cookies-next";
 // import useSWR from "swr";
 
 import Authentication from "./authentication/authentication";
-import { API_URL, SITE_COOKIES } from "@/lib/constant";
+import { API_URL, API_SYNC_URL, SITE_COOKIES } from "@/lib/constant";
 import Pengumuman from "./admin-fakultas/pengumuman/pengumuman";
 import PengumumanPublic from "./admin-fakultas/pengumuman/pengumuman-public";
 import LinkGroup from "./link-group/link-group";
@@ -16,6 +16,7 @@ import AdminBerita from "./admin-fakultas/berita/admin-berita";
 import StrukturOrganisasiServiceDef from "./admin-fakultas/struktur-organisasi/struktur-organisasi";
 import Dosen from "./tugas-akhir/dosen";
 import PublicDosenServiceDef from "./master/public-dosen";
+import FakultasSync from "./fakultas-sync";
 
 // Token Header Configuration
 type TokenType = "Bearer";
@@ -272,5 +273,10 @@ export const AdminBeritaService = AdminBerita({
 
 export const StrukturOrganisasiService = StrukturOrganisasiServiceDef({
   baseUrl: API_URL || "",
+  config: () => configureHeaders({ skipProdiId: true }),
+});
+
+export const FakultasSyncService = FakultasSync({
+  baseUrl: API_SYNC_URL,
   config: () => configureHeaders({ skipProdiId: true }),
 });

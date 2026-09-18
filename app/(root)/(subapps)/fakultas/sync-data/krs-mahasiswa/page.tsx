@@ -18,97 +18,46 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSearchParams } from "next/navigation";
+import useSWR from "swr";
+import { KrsFakultasService } from "@/api/fakultas";
+import { FakultasSyncService } from "@/api";
+import { handleToastResponse } from "@/lib/toast-response";
+import EmptyState from "@/components/empty-state";
+import { AlertCircle } from "lucide-react";
 
-type KrsMahasiswaSyncData = {
-  nama: string;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+type KrsRow = {
+  id: number;
+  nama_krs: string;
   nim: string;
-  matakuliah: string;
-  kelompok: string;
-  semester_ambil: string;
-  status: "B" | "U";
-  absen: string;
-  nilai_uts: string;
-  nilai_uas: string;
-  nilai_akhir_angka: string;
-  nilai_akhir_huruf: string;
+  nama_mahasiswa: string;
+  prodi_id: number;
+  tahun_ajaran: string | null;
+  created_at: string;
 };
 
-const mockData: KrsMahasiswaSyncData[] = [
-  {
-    nama: "Budi Santoso",
-    nim: "A11.2022.15345",
-    matakuliah: "Matematika Diskrit",
-    kelompok: "	A11.46UG",
-    semester_ambil: "5",
-    status: "B",
-    absen: "92%",
-    nilai_uts: "85",
-    nilai_uas: "90",
-    nilai_akhir_angka: "87.5",
-    nilai_akhir_huruf: "A",
-  },
-  {
-    nama: "Siti Aminah",
-    nim: "A11.2021.12345",
-    matakuliah: "Komputasi Awan",
-    kelompok: "	A11.46UG",
-    semester_ambil: "7",
-    status: "U",
-    absen: "70%",
-    nilai_uts: "70",
-    nilai_uas: "75",
-    nilai_akhir_angka: "73.0",
-    nilai_akhir_huruf: "B",
-  },
-  {
-    nama: "Andi Saputra",
-    nim: "A11.2022.12345",
-    matakuliah: "Basis Data",
-    kelompok: "	A11.4801",
-    semester_ambil: "3",
-    status: "B",
-    absen: "85%",
-    nilai_uts: "90",
-    nilai_uas: "95",
-    nilai_akhir_angka: "92.5",
-    nilai_akhir_huruf: "A",
-  },
-  ...Array.from({ length: 22 }).map((_, i) => {
-    const nilaiAkhirAngka = 50 + (i % 40) + (i % 10) / 10;
-    const nilaiAkhirHuruf =
-      nilaiAkhirAngka >= 80 ? "A" :
-      nilaiAkhirAngka >= 70 ? "B" :
-      nilaiAkhirAngka >= 60 ? "C" :
-      nilaiAkhirAngka >= 50 ? "D" : "E";
-    return {
-      nama: `Mahasiswa Dummy ${i + 4}`,
-      nim: `A11.2024.900${i + 70}`,
-      matakuliah: `MK${100 + (i % 5)}`,
-      kelompok: `A11.48${String(i + 1).padStart(2, "0")}`,
-      semester_ambil: `${(i % 8) + 1}`,
-      status: (i % 3 === 0 ? "U" : "B") as "B" | "U",
-      absen: `${75 + (i % 25)}%`,
-      nilai_uts: `${Math.min(100, 50 + (i % 50))}`,
-      nilai_uas: `${Math.min(100, 55 + (i % 45))}`,
-      nilai_akhir_angka: nilaiAkhirAngka.toFixed(1),
-      nilai_akhir_huruf: nilaiAkhirHuruf,
-    };
-  }),
-];
+const fetcher = (page: number, limit: number, search: string, prodi: string) =>
+  KrsFakultasService.getAll({
+    page,
+    limit,
+    search: search || undefined,
+    prodi: prodi !== "all" ? prodi : undefined,
+  });
 
-const columns: ColumnDef<KrsMahasiswaSyncData>[] = [
+const columns: ColumnDef<KrsRow>[] = [
   {
     id: "no",
     header: () => <div className="text-center w-8">No</div>,
     cell: ({ row }) => <div className="text-center w-8">{row.index + 1}</div>,
   },
   {
-    accessorKey: "nama",
-    header: "Nama",
+    accessorKey: "nama_mahasiswa",
+    header: "Nama Mahasiswa",
     cell: ({ row }) => {
-      const nama = row.getValue("nama") as string;
+      const nama = row.getValue("nama_mahasiswa") as string;
       const nim = row.original.nim;
-      const initial = nama.charAt(0).toUpperCase();
+      const initial = nama?.charAt(0)?.toUpperCase() || "?";
 
       return (
         <div className="flex items-center gap-3 py-1">
@@ -126,86 +75,51 @@ const columns: ColumnDef<KrsMahasiswaSyncData>[] = [
     },
   },
   {
-    accessorKey: "matakuliah",
-    header: "Matakuliah",
-    cell: ({ row }) => (
-      <div className="text-sm">{row.getValue("matakuliah")}</div>
-    ),
+    accessorKey: "nim",
+    header: "NIM",
   },
   {
-    accessorKey: "kelompok",
-    header: () => <div className="text-center">Kelompok Mata Kuliah</div>,
-    cell: ({ row }) => <div className="text-center">{row.getValue("kelompok")}</div>,
-  },
-  {
-    accessorKey: "semester_ambil",
-    header: () => <div className="text-center">Semester</div>,
-    cell: ({ row }) => <div className="text-center">{row.getValue("semester_ambil")}</div>,
-  },
-  {
-    accessorKey: "status",
-    header: () => <div className="text-center">Status</div>,
+    accessorKey: "nama_krs",
+    header: "Jenis KRS",
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      const isBaru = status === "B";
+      const krs = row.getValue("nama_krs") as string;
       return (
-        <div className="flex justify-center">
-          <Badge
-            variant="outline"
-            className={
-              isBaru
-                ? "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100/80 font-medium"
-                : "bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100/80 font-medium"
-            }
-          >
-            {isBaru ? "Baru" : "Ulang"}
-          </Badge>
-        </div>
+        <Badge
+          variant="outline"
+          className={
+            krs === "TA1"
+              ? "bg-blue-100 text-blue-700 border-blue-200 font-medium"
+              : krs === "TA2"
+              ? "bg-purple-100 text-purple-700 border-purple-200 font-medium"
+              : "bg-gray-100 text-gray-600 border-gray-200 font-medium"
+          }
+        >
+          {krs}
+        </Badge>
       );
     },
   },
   {
-    accessorKey: "absen",
-    header: () => <div className="text-center">Absen</div>,
-    cell: ({ row }) => <div className="text-center">{row.getValue("absen")}</div>,
+    accessorKey: "tahun_ajaran",
+    header: "Tahun Ajaran",
+    cell: ({ row }) => (
+      <span className="text-sm">{row.getValue("tahun_ajaran") || "-"}</span>
+    ),
   },
   {
-    accessorKey: "nilai_uts",
-    header: () => <div className="text-center">UTS</div>,
-    cell: ({ row }) => <div className="text-center">{row.getValue("nilai_uts")}</div>,
-  },
-  {
-    accessorKey: "nilai_uas",
-    header: () => <div className="text-center">UAS</div>,
-    cell: ({ row }) => <div className="text-center">{row.getValue("nilai_uas")}</div>,
-  },
-  {
-    accessorKey: "nilai_akhir_angka",
-    header: () => <div className="text-center">Nilai Angka</div>,
-    cell: ({ row }) => <div className="text-center">{row.getValue("nilai_akhir_angka")}</div>,
-  },
-  {
-    accessorKey: "nilai_akhir_huruf",
-    header: () => <div className="text-center">Nilai Huruf</div>,
+    accessorKey: "created_at",
+    header: "Tanggal Dibuat",
     cell: ({ row }) => {
-      const nilai = row.getValue("nilai_akhir_huruf") as string;
-      const isLulus = nilai === "A" || nilai === "B";
-      const isC = nilai === "C";
+      const date = row.getValue("created_at") as string;
+      if (!date) return <span className="text-sm">-</span>;
       return (
-        <div className="flex justify-center">
-          <Badge
-            variant="outline"
-            className={
-              isLulus
-                ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-100/80 font-medium"
-                : isC
-                ? "bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100/80 font-medium"
-                : "bg-red-100 text-red-700 border-red-200 hover:bg-red-100/80 font-medium"
-            }
-          >
-            {nilai}
-          </Badge>
-        </div>
+        <span className="text-sm">
+          {new Date(date).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </span>
       );
     },
   },
@@ -214,33 +128,65 @@ const columns: ColumnDef<KrsMahasiswaSyncData>[] = [
 const SyncDataKrsMahasiswaPage = () => {
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
-  const limit = Number(searchParams.get("limit")) || 5;
+  const limit = Number(searchParams.get("limit")) || 10;
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedProdi, setSelectedProdi] = useState("all");
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const filteredData = mockData.filter((item) => {
-    const matchesSearch =
-      item.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.matakuliah.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      selectedStatus === "all" ? true : item.status === selectedStatus;
+  const mutateKey = ["krs-list", page, limit, searchTerm, selectedProdi];
 
-    return matchesSearch && matchesStatus;
-  });
+  const { data: response, error, isLoading } = useSWR(
+    mutateKey,
+    () => fetcher(page, limit, searchTerm, selectedProdi),
+    { dedupingInterval: 1000 }
+  );
 
-  const total = filteredData.length;
-  const lastPage = Math.ceil(total / limit);
-  const paginatedData = filteredData.slice((page - 1) * limit, page * limit);
+  const rawData = response?.data ?? [];
+  const data: KrsRow[] = Array.isArray(rawData) ? rawData : [];
+  const pagination = response?.meta?.pagination;
+  const lastPage = pagination?.last_page ?? 1;
+  const totalData = pagination?.total ?? 0;
 
-  const handleSyncData = () => {
+  const handleSyncData = async () => {
     setIsSyncing(true);
-    setTimeout(() => {
+    try {
+      const res = await FakultasSyncService.syncKrsKhs({
+        prodi: selectedProdi !== "all" ? selectedProdi : "A11",
+      });
+      handleToastResponse(res);
+    } catch {
+      toast.error("Gagal melakukan sinkronisasi data KRS");
+    } finally {
       setIsSyncing(false);
-      toast.success("Data KRS berhasil disinkronisasi");
-    }, 1500);
+    }
   };
+
+  if (error) {
+    return (
+      <div>
+        <DashboardHeader
+          breadcrumbItems={[
+            { name: "Dashboard", url: "/fakultas" },
+            { name: "Sync Data", url: "/fakultas/sync-data" },
+            { name: "KRS Mahasiswa", url: "/fakultas/sync-data/krs-mahasiswa" },
+          ]}
+          titleItems={[
+            {
+              title: "Sinkronisasi Data KRS Mahasiswa",
+              subtitle: "Sinkronkan data KRS mahasiswa fakultas dengan sistem pusat.",
+            },
+          ]}
+        />
+        <EmptyState
+          icon={AlertCircle}
+          title="Gagal memuat data"
+          subtitle="Terjadi kesalahan saat mengambil data KRS."
+          className="h-[400px]"
+        />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -263,7 +209,7 @@ const SyncDataKrsMahasiswaPage = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Cari mahasiswa atau matakuliah..."
+            placeholder="Cari nama atau NIM..."
             className="pl-9 h-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -272,14 +218,19 @@ const SyncDataKrsMahasiswaPage = () => {
 
         <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-x-2 md:space-y-0">
           <div className="w-full md:w-48">
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <Select value={selectedProdi} onValueChange={setSelectedProdi}>
               <SelectTrigger className="h-10">
-                <SelectValue placeholder="Pilih Status" />
+                <SelectValue placeholder="Pilih Prodi" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Status</SelectItem>
-                <SelectItem value="B">Baru</SelectItem>
-                <SelectItem value="U">Ulang</SelectItem>
+                <SelectItem value="all">Semua Prodi</SelectItem>
+                <SelectItem value="A11">S1 Teknik Informatika</SelectItem>
+                <SelectItem value="A12">S1 Sistem Informasi</SelectItem>
+                <SelectItem value="A14">S1 Teknologi Informasi</SelectItem>
+                <SelectItem value="A15">D3 Teknik Komputer</SelectItem>
+                <SelectItem value="A16">D3 Manajemen Informatika</SelectItem>
+                <SelectItem value="A17">D3 Komputerisasi Akuntansi</SelectItem>
+                <SelectItem value="A22">S1 Informatika (Kediri)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -296,12 +247,13 @@ const SyncDataKrsMahasiswaPage = () => {
       <div className="mt-3">
         <DataTable
           columns={columns}
-          data={paginatedData}
+          data={data}
+          loading={isLoading}
           pagination={{
             currentPage: page,
             lastPage: lastPage,
             limit: limit,
-            total: total,
+            total: totalData,
           }}
         />
       </div>

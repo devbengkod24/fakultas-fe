@@ -8,6 +8,10 @@ import RuanganSidangDef from "./manajemen-ruangan/ruangan-sidang";
 import DosenFakultAS from "./dosen/dosen";
 import PeriodeFakultas from "./periode";
 import LaporanEksekutifFakultas from "./laporan-eksekutif";
+import MataKuliahFakultas from "./mata-kuliah";
+import MahasiswaFakultas from "./mahasiswa";
+import KrsFakultas from "./krs";
+import ProdiFakultas from "./prodi";
 
 const FIK_URL = `${API_URL}`;
 const PUBLIC_FAKULTAS_URL = `${API_URL}/cms/public`;
@@ -69,6 +73,26 @@ export const PeriodeFakultasService = PeriodeFakultas({
 });
 
 export const LaporanEksekutifFakultasService = LaporanEksekutifFakultas({
+  baseUrl: FIK_URL,
+  config: () => configureHeaders({ skipProdiId: true }),
+});
+
+export const MataKuliahFakultasService = MataKuliahFakultas({
+  baseUrl: FIK_URL,
+  config: () => configureHeaders({ skipProdiId: true }),
+});
+
+export const MahasiswaFakultasService = MahasiswaFakultas({
+  baseUrl: FIK_URL,
+  config: () => configureHeaders({ skipProdiId: true }),
+});
+
+export const KrsFakultasService = KrsFakultas({
+  baseUrl: FIK_URL,
+  config: () => configureHeaders({ skipProdiId: true }),
+});
+
+export const ProdiFakultasService = ProdiFakultas({
   baseUrl: FIK_URL,
   config: () => configureHeaders({ skipProdiId: true }),
 });
