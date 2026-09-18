@@ -103,6 +103,7 @@ const SyncDataKelompokMatkulPage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
+  const [maxItems, setMaxItems] = useState("");
 
   const mutateKey = ["kelompok-matkul-list", page, limit, searchTerm];
 
@@ -122,7 +123,8 @@ const SyncDataKelompokMatkulPage = () => {
     setIsSyncing(true);
     try {
       const res = await FakultasSyncService.syncKelompokMatkul({
-        prodi: "A11", // Defaulting to A11 or could be made dynamic
+        prodi: "A11",
+        max_items: maxItems ? parseInt(maxItems) : undefined,
       });
       handleToastResponse(res);
     } catch (err: any) {
@@ -187,6 +189,15 @@ const SyncDataKelompokMatkulPage = () => {
         </div>
 
         <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-x-2 md:space-y-0">
+          <Input
+            type="number"
+            placeholder="Max data (kosong = semua)"
+            className="h-10 w-full md:w-48"
+            value={maxItems}
+            onChange={(e) => setMaxItems(e.target.value)}
+            min={1}
+          />
+
           <Button onClick={handleSyncData} disabled={isSyncing} className="h-10">
             <RefreshCw
               className={`mr-2 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
