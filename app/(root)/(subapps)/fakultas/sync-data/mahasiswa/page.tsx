@@ -108,18 +108,52 @@ const columns: ColumnDef<MahasiswaRow>[] = [
     header: () => <div className="text-center">Status</div>,
     cell: ({ row }) => {
       const status = row.getValue("status") as string | null;
-      const isAktif = status === "aktif";
+      const statusMap: Record<string, { label: string; className: string }> = {
+        aktif: {
+          label: "Aktif",
+          className:
+            "border-green-200 bg-green-100 text-green-700 hover:bg-green-100/80",
+        },
+        tidak_aktif: {
+          label: "Tidak Aktif",
+          className:
+            "border-red-200 bg-red-100 text-red-700 hover:bg-red-100/80",
+        },
+        lulus: {
+          label: "Lulus",
+          className:
+            "border-blue-200 bg-blue-100 text-blue-700 hover:bg-blue-100/80",
+        },
+        cuti: {
+          label: "Cuti",
+          className:
+            "border-orange-200 bg-orange-100 text-orange-700 hover:bg-orange-100/80",
+        },
+        DO: {
+          label: "DO",
+          className:
+            "border-rose-300 bg-rose-100 text-rose-800 hover:bg-rose-100/80",
+        },
+        mangkir: {
+          label: "Mangkir",
+          className:
+            "border-yellow-200 bg-yellow-100 text-yellow-700 hover:bg-yellow-100/80",
+        },
+      };
+      const entry = status
+        ? (statusMap[status] ?? {
+            label: status,
+            className:
+              "border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-100/80",
+          })
+        : null;
       return (
         <div className="flex justify-center">
           <Badge
             variant="outline"
-            className={
-              isAktif
-                ? "border-green-200 bg-green-100 font-medium text-green-700 hover:bg-green-100/80"
-                : "border-amber-200 bg-amber-100 font-medium text-amber-700 hover:bg-amber-100/80"
-            }
+            className={entry ? `font-medium ${entry.className}` : ""}
           >
-            {status ?? "-"}
+            {entry ? entry.label : "-"}
           </Badge>
         </div>
       );
