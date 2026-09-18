@@ -16,6 +16,7 @@ export const USE_API_PROXY =
   process.env.NEXT_PUBLIC_USE_PROXY === "true";
 export const API_BK_SYNC_LMS_URL = process.env.NEXT_PUBLIC_API_BK_SYNC_LMS_URL;
 export const API_EWS_URL = process.env.NEXT_PUBLIC_API_EWS_URL;
+export const API_SYNC_URL = process.env.NEXT_PUBLIC_API_SYNC_URL || "http://localhost:8010";
 
 // Single source of truth for who can access the EWS (Early Warning System) subapp.
 // Previously duplicated with drifting values across withAuth.tsx, app-switcher.tsx,

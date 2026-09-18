@@ -12,16 +12,33 @@ import {
   Pagination, PaginationContent, PaginationItem,
   PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis,
 } from "@/components/ui/pagination";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import {
-  BookOpen, FlaskConical, Users, Calendar, Banknote, ExternalLink, Plus, Pencil, Search,
+  BookOpen, FlaskConical, Users, Calendar, Banknote, ExternalLink, Plus, Pencil, Trash2, Search, Lightbulb,
 } from "lucide-react";
 
 import {
-  Publication, Research, CommunityService,
+  Publication, Research, CommunityService, Pengabdian, KekayaanIntelektual,
 } from "@/types/fakultas/penelitian/penelitian";
 
 import { CreateArtikelDialog, CreatePenelitianDialog } from "@/app/(root)/components/tridharma-dialogs";
+import {
+  DialogKeteranganForm,
+  KeteranganType,
+} from "./dialog-keterangan-form";
+import { DosenFakultasService } from "@/api";
+import { handleToastResponse } from "@/lib/toast-response";
 
 // ─── Tab Navigation ───────────────────────────────────────────────────────────
 
@@ -132,6 +149,13 @@ interface TridharmaSectionProps {
   publications?: Publication[];
   researches?: Research[];
   communityServices?: CommunityService[];
+  pengabdianSync?: Pengabdian[];
+  kekayaanIntelektual?: KekayaanIntelektual[];
+  /** Dipanggil abis sukses create/update/delete pengabdian-sync atau kekayaan
+   *  intelektual -- refresh data dosen (bukan `mutate(["tridharma", ...])`,
+   *  data ini datang dari `dosen.pengabdian`/`dosen.kekayaan_intelektual`,
+   *  sumber beda dari tridharma yang dari API publikasi eksternal). */
+  onDataChanged?: () => void;
   baseUrl?: string;
   readOnly?: boolean;
   isSelfView?: boolean;
@@ -144,6 +168,9 @@ export function TridharmaSection({
   publications = [],
   researches = [],
   communityServices = [],
+  pengabdianSync = [],
+  kekayaanIntelektual = [],
+  onDataChanged,
   baseUrl = "/fakultas/manajemen-dosen/detail",
   readOnly = false,
   isSelfView = false,
@@ -163,6 +190,19 @@ export function TridharmaSection({
   // Number() wajib: prop dosenId bertipe number | string, key di fetcher number,
   // dan SWR banding key by value -> "60" != 60 = mutate meleset tanpa error.
   const refreshTridharma = () => mutate(["tridharma", Number(dosenId)]);
+
+  const [keteranganDialog, setKeteranganDialog] = useState<{
+    type: KeteranganType;
+    title: string;
+    itemId?: number;
+    initialValue?: string;
+  } | null>(null);
+
+  const handleDeleteKeterangan = async (type: KeteranganType, itemId: number) => {
+    const res = await DosenFakultasService.deleteKeterangan(Number(dosenId), type, itemId);
+    handleToastResponse(res);
+    if (res?.success) onDataChanged?.();
+  };
 
   const ITEMS_PER_PAGE = 5;
   const [pubPage, setPubPage] = useState(1);
@@ -192,13 +232,14 @@ export function TridharmaSection({
   const totalPenelitianPages = Math.ceil(filteredPenelitian.length / ITEMS_PER_PAGE);
   const totalPengabdianPages = Math.ceil(communityServices.length / ITEMS_PER_PAGE);
 
-  const tabs = ["Publikasi", "Penelitian", "Pengabdian"];
+  const tabs = ["Publikasi", "Penelitian", "Pengabdian", "Kekayaan Intelektual"];
 
   const getTabIcon = (tab: string) => {
     switch (tab) {
       case "Publikasi": return <BookOpen className="h-5 w-5" />;
       case "Penelitian": return <FlaskConical className="h-5 w-5" />;
       case "Pengabdian": return <Users className="h-5 w-5" />;
+      case "Kekayaan Intelektual": return <Lightbulb className="h-5 w-5" />;
       default: return null;
     }
   };
@@ -501,11 +542,13 @@ export function TridharmaSection({
             {/* ================= PENGABDIAN ================= */}
             {currentTab === "Pengabdian" && (
               <>
-                {communityServices.length === 0 ? (
+                {communityServices.length === 0 && pengabdianSync.length === 0 && readOnly ? (
                   <div className="text-center py-10 text-muted-foreground">
                     Belum ada data pengabdian
                   </div>
                 ) : (
+                  <>
+                {communityServices.length > 0 && (
                   <>
                     {paginatedPengabdian.map((service, index) => (
                       <Card
@@ -544,6 +587,156 @@ export function TridharmaSection({
                     />
                   </>
                 )}
+
+                {/* Data pengabdian dari sync kampus (tabel `pengabdian`, keterangan bebas) --
+                    sumbernya beda dari communityServices di atas (API publikasi eksternal),
+                    ditampilkan berdampingan tanpa digabung strukturnya. */}
+                {(pengabdianSync.length > 0 || !readOnly) && (
+                  <div className={communityServices.length > 0 ? "mt-6 pt-6 border-t border-slate-100" : ""}>
+                    {!readOnly && (
+                      <div className="flex justify-end mb-3">
+                        <Button
+                          size="sm"
+                          onClick={() => setKeteranganDialog({ type: "pengabdian", title: "Tambah Pengabdian" })}
+                        >
+                          <Plus className="w-4 h-4 mr-1" /> Tambah Pengabdian
+                        </Button>
+                      </div>
+                    )}
+                    {pengabdianSync.length > 0 ? (
+                      <div className="space-y-5">
+                        {pengabdianSync.map((p) => (
+                          <Card
+                            key={p.id}
+                            className="p-5 hover:shadow-md transition-shadow border-l-4 border-l-primary-600"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <h3 className="text-lg font-semibold text-primary-600 flex-1">{p.keterangan}</h3>
+                              {!readOnly && (
+                                <div className="flex gap-1 flex-shrink-0">
+                                  <button
+                                    onClick={() => setKeteranganDialog({
+                                      type: "pengabdian",
+                                      title: "Edit Pengabdian",
+                                      itemId: p.id,
+                                      initialValue: p.keterangan,
+                                    })}
+                                    className="text-slate-500 hover:text-slate-700"
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <button className="text-red-500 hover:text-red-700">
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Hapus Pengabdian</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Apakah Anda yakin akan menghapus data pengabdian ini?
+                                          Tindakan ini tidak dapat dibatalkan.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => handleDeleteKeterangan("pengabdian", p.id)}
+                                          className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                                        >
+                                          Hapus
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              )}
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">Belum ada data pengabdian (sync)</p>
+                    )}
+                  </div>
+                )}
+                  </>
+                )}
+              </>
+            )}
+
+            {/* ================= KEKAYAAN INTELEKTUAL ================= */}
+            {currentTab === "Kekayaan Intelektual" && (
+              <>
+                {!readOnly && (
+                  <div className="flex justify-end mb-3">
+                    <Button
+                      size="sm"
+                      onClick={() => setKeteranganDialog({ type: "kekayaan-intelektual", title: "Tambah Kekayaan Intelektual" })}
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Tambah Kekayaan Intelektual
+                    </Button>
+                  </div>
+                )}
+                {kekayaanIntelektual.length === 0 ? (
+                  <div className="text-center py-10 text-muted-foreground">
+                    Belum ada data kekayaan intelektual
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    {kekayaanIntelektual.map((k) => (
+                      <Card
+                        key={k.id}
+                        className="p-5 hover:shadow-md transition-shadow border-l-4 border-l-primary-600"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <h3 className="text-lg font-semibold text-primary-600 flex-1">{k.keterangan}</h3>
+                          {!readOnly && (
+                            <div className="flex gap-1 flex-shrink-0">
+                              <button
+                                onClick={() => setKeteranganDialog({
+                                  type: "kekayaan-intelektual",
+                                  title: "Edit Kekayaan Intelektual",
+                                  itemId: k.id,
+                                  initialValue: k.keterangan,
+                                })}
+                                className="text-slate-500 hover:text-slate-700"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button className="text-red-500 hover:text-red-700">
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Hapus Kekayaan Intelektual</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Apakah Anda yakin akan menghapus data kekayaan intelektual ini?
+                                      Tindakan ini tidak dapat dibatalkan.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteKeterangan("kekayaan-intelektual", k.id)}
+                                      className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                                    >
+                                      Hapus
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </>
             )}
 
@@ -577,6 +770,19 @@ export function TridharmaSection({
             }}
           />
         </>
+      )}
+
+      {keteranganDialog && (
+        <DialogKeteranganForm
+          open={!!keteranganDialog}
+          dosenId={Number(dosenId)}
+          type={keteranganDialog.type}
+          title={keteranganDialog.title}
+          itemId={keteranganDialog.itemId}
+          initialValue={keteranganDialog.initialValue}
+          onClose={() => setKeteranganDialog(null)}
+          onSuccess={() => onDataChanged?.()}
+        />
       )}
     </>
   );

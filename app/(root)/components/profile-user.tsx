@@ -165,13 +165,15 @@ const ProfileUser = ({ isBk = false }: ProfileUserProps) => {
       />
 
       <div className="space-y-6">
-        {/* ─── TOMBOL GANTI PASSWORD (SEMUA ROLE) ─── */}
-        <div className="flex justify-end">
-          <Button size="sm" onClick={() => setIsPasswordModalOpen(true)}>
-            <Plus size={16} />
-            <span className="ml-1">Ganti password</span>
-          </Button>
-        </div>
+        {/* ─── TOMBOL GANTI PASSWORD (role lain, non-dosen) ─── */}
+        {!isDosen && (
+          <div className="flex justify-end">
+            <Button size="sm" onClick={() => setIsPasswordModalOpen(true)}>
+              <Plus size={16} />
+              <span className="ml-1">Ganti password</span>
+            </Button>
+          </div>
+        )}
 
         {/* ─── ROLE DOSEN: DetailDosenFetcher (komponen terpadu, sama dengan admin/fakultas) ─── */}
         {isDosen && (
@@ -448,25 +450,31 @@ const ProfileUser = ({ isBk = false }: ProfileUserProps) => {
         )}
 
         {/* ─── ROLE DOSEN: Hak Akses & Izin (di bawah detail dosen) ─── */}
-        {isDosen && permissions.length > 0 && (
+        {isDosen && (
           <Card className="shadow-sm">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 flex flex-row items-center justify-between">
               <h3 className="font-semibold text-lg flex items-center gap-2">
                 <div className="p-2 bg-primary-50 rounded-lg flex-shrink-0">
                   <Shield className="size-4 text-primary-600" />
                 </div>
                 <span className="truncate">Hak Akses & Izin</span>
               </h3>
+              <Button size="sm" onClick={() => setIsPasswordModalOpen(true)}>
+                <Plus size={16} />
+                <span className="ml-1">Ganti password</span>
+              </Button>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {permissions.map((permission, index) => (
-                  <Badge key={`${permission}-${index}`} variant="secondary" className="break-all">
-                    {permission}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
+            {permissions.length > 0 && (
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {permissions.map((permission, index) => (
+                    <Badge key={`${permission}-${index}`} variant="secondary" className="break-all">
+                      {permission}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            )}
           </Card>
         )}
 

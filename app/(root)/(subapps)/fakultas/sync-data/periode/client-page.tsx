@@ -16,7 +16,7 @@ function SyncDataPeriodeClientPage() {
         titleItems={[
           {
             title: "Sinkronisasi Data Periode",
-            subtitle: "Sinkronkan data periode fakultas dengan sistem pusat.",
+            subtitle: "Sinkronkan data periode fakultas dengan sistem pusat. Menampilkan informasi kode periode, tahun ajaran, tanggal perkuliahan, tugas akhir, dan bimbingan karir.",
           },
         ]}
       />

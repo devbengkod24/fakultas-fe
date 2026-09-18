@@ -1,14 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import { Dosen } from "@/types/fakultas/penelitian/penelitian";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, GraduationCap, Briefcase, Pencil, CalendarDays } from "lucide-react";
+import { ArrowLeft, GraduationCap, Briefcase, Pencil, Plus, Trash2, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { TridharmaSection } from "../../../_components/manajemen-dosen/tri-dharma-section";
+import { JadwalMengajarGrid } from "../../../_components/manajemen-dosen/jadwal-mengajar-grid";
 import { ProfileCard } from "../../../_components/manajemen-dosen/profile-card";
 import { TtdSection } from "../../../_components/manajemen-dosen/ttd-section";
+import {
+  DialogKeteranganForm,
+  KeteranganType,
+} from "../../../_components/manajemen-dosen/dialog-keterangan-form";
+import {
+  DialogJadwalMengajarForm,
+  JadwalMengajarFormValue,
+} from "../../../_components/manajemen-dosen/dialog-jadwal-mengajar-form";
+import { DosenFakultasService } from "@/api";
+import { handleToastResponse } from "@/lib/toast-response";
 import {
   Table,
   TableBody,
@@ -17,6 +29,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface DetailDosenClientProps {
   dosen: Dosen;
@@ -37,6 +60,29 @@ export default function DetailDosenClient({
   isPublic = false,
   canAssignProdi = false,
 }: DetailDosenClientProps) {
+  const [keteranganDialog, setKeteranganDialog] = useState<{
+    type: KeteranganType;
+    title: string;
+    itemId?: number;
+    initialValue?: string;
+  } | null>(null);
+  const [jadwalDialog, setJadwalDialog] = useState<{
+    itemId?: number;
+    initialValue?: JadwalMengajarFormValue;
+  } | null>(null);
+
+  const handleDeleteKeterangan = async (type: KeteranganType, itemId: number) => {
+    const res = await DosenFakultasService.deleteKeterangan(dosen.dosen_id, type, itemId);
+    handleToastResponse(res);
+    if (res?.success) window.location.reload();
+  };
+
+  const handleDeleteJadwal = async (itemId: number) => {
+    const res = await DosenFakultasService.deleteJadwalMengajar(dosen.dosen_id, itemId);
+    handleToastResponse(res);
+    if (res?.success) window.location.reload();
+  };
+
   return (
     <div className="space-y-6">
 
@@ -156,10 +202,10 @@ export default function DetailDosenClient({
         </Card>
       )}
 
-      {/* Riwayat Karir & Pendidikan (dummy) */}
-      {(!!dosen.riwayat_karir?.length || !!dosen.riwayat_pendidikan?.length) && (
+      {/* Riwayat Karir & Pendidikan */}
+      {(!!dosen.riwayat_karir?.length || !!dosen.riwayat_pendidikan?.length || !readOnly) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {!!dosen.riwayat_karir?.length && (
+          {(!!dosen.riwayat_karir?.length || !readOnly) && (
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -168,34 +214,82 @@ export default function DetailDosenClient({
                     Riwayat Karir
                   </CardTitle>
                   {!readOnly && (
-                    <Link href={`${baseUrl}/${dosen.dosen_id}/edit-riwayat-karir`}>
-                      <Button variant="outline" size="sm">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setKeteranganDialog({ type: "riwayat-karir", title: "Tambah Riwayat Karir" })}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   )}
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {dosen.riwayat_karir.map((karir) => (
-                    <div
-                      key={karir.id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b pb-3 last:border-0 last:pb-0"
-                    >
-                      <div>
-                        <p className="font-medium">{karir.posisi}</p>
-                        <p className="text-sm text-muted-foreground">{karir.instasi}</p>
+                {dosen.riwayat_karir?.length ? (
+                  <div className="space-y-3">
+                    {dosen.riwayat_karir.map((karir) => (
+                      <div
+                        key={karir.id}
+                        className="flex items-start justify-between gap-2 border-b pb-3 last:border-0 last:pb-0"
+                      >
+                        <p className="text-sm flex-1">{karir.keterangan}</p>
+                        {!readOnly && (
+                          <div className="flex gap-1 flex-shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => setKeteranganDialog({
+                                type: "riwayat-karir",
+                                title: "Edit Riwayat Karir",
+                                itemId: karir.id,
+                                initialValue: karir.keterangan,
+                              })}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Hapus Riwayat Karir</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Apakah Anda yakin akan menghapus riwayat karir ini?
+                                    Tindakan ini tidak dapat dibatalkan.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteKeterangan("riwayat-karir", karir.id)}
+                                    className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                                  >
+                                    Hapus
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        )}
                       </div>
-                      <span className="text-sm text-muted-foreground">{karir.tahun}</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">Belum ada data riwayat karir</p>
+                )}
               </CardContent>
             </Card>
           )}
 
-          {!!dosen.riwayat_pendidikan?.length && (
+          {(!!dosen.riwayat_pendidikan?.length || !readOnly) && (
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -204,75 +298,118 @@ export default function DetailDosenClient({
                     Riwayat Pendidikan
                   </CardTitle>
                   {!readOnly && (
-                    <Link href={`${baseUrl}/${dosen.dosen_id}/edit-riwayat-pendidikan`}>
-                      <Button variant="outline" size="sm">
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setKeteranganDialog({ type: "riwayat-pendidikan", title: "Tambah Riwayat Pendidikan" })}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   )}
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {dosen.riwayat_pendidikan.map((pendidikan) => (
-                    <div
-                      key={pendidikan.id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b pb-3 last:border-0 last:pb-0"
-                    >
-                      <div>
-                        <p className="font-medium">{pendidikan.jenjang}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {pendidikan.programStudi} - {pendidikan.instasi}
-                        </p>
+                {dosen.riwayat_pendidikan?.length ? (
+                  <div className="space-y-3">
+                    {dosen.riwayat_pendidikan.map((pendidikan) => (
+                      <div
+                        key={pendidikan.id}
+                        className="flex items-start justify-between gap-2 border-b pb-3 last:border-0 last:pb-0"
+                      >
+                        <p className="text-sm flex-1">{pendidikan.keterangan}</p>
+                        {!readOnly && (
+                          <div className="flex gap-1 flex-shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => setKeteranganDialog({
+                                type: "riwayat-pendidikan",
+                                title: "Edit Riwayat Pendidikan",
+                                itemId: pendidikan.id,
+                                initialValue: pendidikan.keterangan,
+                              })}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Hapus Riwayat Pendidikan</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Apakah Anda yakin akan menghapus riwayat pendidikan ini?
+                                    Tindakan ini tidak dapat dibatalkan.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteKeterangan("riwayat-pendidikan", pendidikan.id)}
+                                    className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                                  >
+                                    Hapus
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        )}
                       </div>
-                      <span className="text-sm text-muted-foreground">{pendidikan.tahun}</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">Belum ada data riwayat pendidikan</p>
+                )}
               </CardContent>
             </Card>
           )}
         </div>
       )}
 
-      {/* Jadwal Mengajar (dummy) */}
-      {!!dosen.jadwal_mengajar?.length && (
+      {/* Jadwal Mengajar -- catatan resmi diatur prodi/fakultas, dosen sendiri
+          (isSelfView) TIDAK boleh nambah/edit/hapus jadwalnya sendiri, cuma
+          bisa lihat. Match authorizeJadwalAccess() di BE yang gak include isSelf. */}
+      {(!!dosen.jadwal_mengajar?.length || (!readOnly && !isSelfView)) && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarDays className="h-5 w-5" />
-              Jadwal Mengajar
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <CalendarDays className="h-5 w-5" />
+                Jadwal Mengajar
+              </CardTitle>
+              {!readOnly && !isSelfView && (
+                <Button variant="outline" size="sm" onClick={() => setJadwalDialog({})}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">No</TableHead>
-                  <TableHead>Mata Kuliah</TableHead>
-                  <TableHead>Kelompok</TableHead>
-                  <TableHead className="w-16">SKS</TableHead>
-                  <TableHead>Jadwal</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {dosen.jadwal_mengajar.map((jadwal, index) => (
-                  <TableRow key={jadwal.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell className="font-medium">{jadwal.mata_kuliah}</TableCell>
-                    <TableCell>{jadwal.kelompok}</TableCell>
-                    <TableCell>{jadwal.sks}</TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <span className="font-medium">{jadwal.hari}</span>, {jadwal.jam}
-                        <br />
-                        <span className="text-muted-foreground">{jadwal.ruang}</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <JadwalMengajarGrid
+              jadwal={dosen.jadwal_mengajar ?? []}
+              canManage={!readOnly && !isSelfView}
+              onEdit={(jadwal) =>
+                setJadwalDialog({
+                  itemId: jadwal.id,
+                  initialValue: {
+                    hari: jadwal.hari,
+                    jam: jadwal.jam,
+                    kelas: jadwal.kelompok,
+                    matkul: jadwal.mata_kuliah,
+                    ruang: jadwal.ruang,
+                  },
+                })
+              }
+            />
           </CardContent>
         </Card>
       )}
@@ -285,10 +422,43 @@ export default function DetailDosenClient({
         publications={dosen.articles}
         researches={dosen.researches}
         communityServices={dosen.community_services}
+        pengabdianSync={dosen.pengabdian}
+        kekayaanIntelektual={dosen.kekayaan_intelektual}
+        onDataChanged={() => window.location.reload()}
         baseUrl={baseUrl}
         readOnly={readOnly}
         isSelfView={isSelfView}
       />
+
+      {keteranganDialog && (
+        <DialogKeteranganForm
+          open={!!keteranganDialog}
+          dosenId={dosen.dosen_id}
+          type={keteranganDialog.type}
+          title={keteranganDialog.title}
+          itemId={keteranganDialog.itemId}
+          initialValue={keteranganDialog.initialValue}
+          onClose={() => setKeteranganDialog(null)}
+          onSuccess={() => window.location.reload()}
+        />
+      )}
+
+      {jadwalDialog && (
+        <DialogJadwalMengajarForm
+          open={!!jadwalDialog}
+          dosenId={dosen.dosen_id}
+          itemId={jadwalDialog.itemId}
+          initialValue={jadwalDialog.initialValue}
+          canDelete={!readOnly && !isSelfView}
+          onClose={() => setJadwalDialog(null)}
+          onSuccess={() => window.location.reload()}
+          onDelete={
+            jadwalDialog.itemId
+              ? () => handleDeleteJadwal(jadwalDialog.itemId as number)
+              : undefined
+          }
+        />
+      )}
 
       {/* Back Button */}
       {!isSelfView && (
