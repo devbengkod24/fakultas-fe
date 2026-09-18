@@ -19,6 +19,7 @@ import useSWR, { mutate } from "swr";
 import EmptyState from "@/components/empty-state";
 import { toast } from "sonner";
 import { PeriodeFakultasService } from "@/api/fakultas";
+import { FakultasSyncService } from "@/api";
 import SearchControl from "@/components/search-control";
 import { handleToastResponse } from "@/lib/toast-response";
 import {
@@ -561,7 +562,7 @@ export default function TableSyncPeriode() {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      const res = await PeriodeFakultasService.sync();
+      const res = await FakultasSyncService.syncPeriode();
       mutate(mutateKey);
       if (res?.success === false) {
         toast.error(res.message || "Gagal sinkronisasi data periode");

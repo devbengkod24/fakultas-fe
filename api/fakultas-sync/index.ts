@@ -42,16 +42,16 @@ const FakultasSync = ({
         });
     },
 
-    syncAll: () => post("/sync/all"),
+    syncAll: () => post("/all"),
 
-    syncProdi: () => post("/sync/prodi"),
+    syncProdi: () => post("/prodi"),
 
-    syncPeriode: () => post("/sync/periode"),
+    syncPeriode: () => post("/periode"),
 
-    syncMatkul: () => post("/sync/matkul"),
+    syncMatkul: () => post("/matkul"),
 
     syncDosen: (kodeProdi?: string) =>
-      post("/sync/dosen", kodeProdi ? { kode_prodi: kodeProdi } : undefined),
+      post("/dosen", kodeProdi ? { kode_prodi: kodeProdi } : undefined),
 
     syncMahasiswa: (params?: {
       prodi?: string;
@@ -67,7 +67,7 @@ const FakultasSync = ({
       if (params?.status) queryParams.append("status", params.status);
       if (params?.status_mhs) queryParams.append("status_mhs", params.status_mhs);
       const qs = queryParams.toString();
-      return post(`/sync/mahasiswa${qs ? `?${qs}` : ""}`);
+      return post(`/mahasiswa${qs ? `?${qs}` : ""}`);
     },
 
     syncKrsKhs: (body: {
@@ -75,7 +75,7 @@ const FakultasSync = ({
       nim?: string;
       limit?: number;
       offset?: number;
-    }) => post("/sync/krs-khs", body),
+    }) => post("/krs-khs", body),
 
     syncYudisium: (params?: {
       nim?: string;
@@ -87,7 +87,7 @@ const FakultasSync = ({
       if (params?.prodi) queryParams.append("prodi", params.prodi);
       if (params?.wisuda_ke) queryParams.append("wisuda_ke", params.wisuda_ke);
       const qs = queryParams.toString();
-      return post(`/sync/yudisium${qs ? `?${qs}` : ""}`);
+      return post(`/yudisium${qs ? `?${qs}` : ""}`);
     },
   };
 };

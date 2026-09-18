@@ -277,6 +277,6 @@ export const StrukturOrganisasiService = StrukturOrganisasiServiceDef({
 });
 
 export const FakultasSyncService = FakultasSync({
-  baseUrl: API_SYNC_URL,
+  baseUrl: `${API_URL}/v1/sync/super-fakultas`,
   config: () => configureHeaders({ skipProdiId: true }),
 });

@@ -72,6 +72,7 @@ const columns: ColumnDef<ProdiRow>[] = [
 export default function SyncDataProdiPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const search = searchParams.get("search") || "";
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
 
@@ -83,7 +84,19 @@ export default function SyncDataProdiPage() {
   });
 
   const rawProdi = response?.data?.data ?? response?.data ?? [];
-  const data: ProdiRow[] = Array.isArray(rawProdi) ? rawProdi : [];
+  const allData: ProdiRow[] = Array.isArray(rawProdi) ? rawProdi : [];
+
+  const filteredData = search
+    ? allData.filter(
+        (item) =>
+          item.nama?.toLowerCase().includes(search.toLowerCase()) ||
+          item.kode_prodi?.toLowerCase().includes(search.toLowerCase()) ||
+          item.gelar?.toLowerCase().includes(search.toLowerCase()) ||
+          item.category?.nama?.toLowerCase().includes(search.toLowerCase())
+      )
+    : allData;
+
+  const data = filteredData;
   const totalData = data.length;
   const lastPage = Math.ceil(totalData / limit) || 1;
   const startIndex = (page - 1) * limit;
