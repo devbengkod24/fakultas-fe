@@ -6,13 +6,22 @@ import { DataTable } from "@/components/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { MahasiswaFakultasService } from "@/api/fakultas";
+import { MahasiswaFakultasService, ProdiFakultasService } from "@/api/fakultas";
+import type { Mahasiswa } from "@/api/fakultas/mahasiswa";
+import type { Prodi } from "@/api/fakultas/prodi";
 import { FakultasSyncService } from "@/api";
 import { handleToastResponse } from "@/lib/toast-response";
 import EmptyState from "@/components/empty-state";
@@ -20,25 +29,21 @@ import { AlertCircle } from "lucide-react";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type MahasiswaRow = {
-  mahasiswa_id: number;
-  nim: string;
-  name: string;
-  email: string;
-  ipk: number;
-  dosen_name: string;
-  krs_ta1: number;
-  krs_ta2: number;
-};
+type MahasiswaRow = Mahasiswa;
 
-const fetcher = (page: number, limit: number, search: string) =>
-  MahasiswaFakultasService.getAll({ page, limit, search: search || undefined });
+const fetcher = (page: number, limit: number, search: string, prodi: string) =>
+  MahasiswaFakultasService.getAll({
+    page,
+    limit,
+    search: search || undefined,
+    prodi: prodi !== "all" ? prodi : undefined,
+  });
 
 const columns: ColumnDef<MahasiswaRow>[] = [
   {
     id: "no",
-    header: () => <div className="text-center w-8">No</div>,
-    cell: ({ row }) => <div className="text-center w-8">{row.index + 1}</div>,
+    header: () => <div className="w-8 text-center">No</div>,
+    cell: ({ row }) => <div className="w-8 text-center">{row.index + 1}</div>,
   },
   {
     accessorKey: "name",
@@ -51,12 +56,12 @@ const columns: ColumnDef<MahasiswaRow>[] = [
       return (
         <div className="flex items-center gap-3 py-1">
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-muted text-muted-foreground font-medium">
+            <AvatarFallback className="bg-muted font-medium text-muted-foreground">
               {initial}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="font-semibold text-sm">{nama}</span>
+            <span className="text-sm font-semibold">{nama}</span>
             <span className="text-sm text-muted-foreground">{nim}</span>
           </div>
         </div>
@@ -64,8 +69,52 @@ const columns: ColumnDef<MahasiswaRow>[] = [
     },
   },
   {
-    accessorKey: "nim",
-    header: "NIM",
+    accessorKey: "prodi",
+    header: "Prodi",
+    cell: ({ row }) => (
+      <span className="text-sm">{row.getValue("prodi") || "-"}</span>
+    ),
+  },
+  {
+    accessorKey: "angkatan",
+    header: () => <div className="text-center">Angkatan</div>,
+    cell: ({ row }) => {
+      const angkatan = row.getValue("angkatan") as string | null;
+      return (
+        <div className="text-center">
+          {!angkatan || angkatan === "0000" ? "-" : angkatan}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "semester_aktif",
+    header: () => <div className="text-center">Semester Aktif</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("semester_aktif") ?? "-"}</div>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: () => <div className="text-center">Status</div>,
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string | null;
+      const isAktif = status === "aktif";
+      return (
+        <div className="flex justify-center">
+          <Badge
+            variant="outline"
+            className={
+              isAktif
+                ? "border-green-200 bg-green-100 font-medium text-green-700 hover:bg-green-100/80"
+                : "border-amber-200 bg-amber-100 font-medium text-amber-700 hover:bg-amber-100/80"
+            }
+          >
+            {status ?? "-"}
+          </Badge>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "ipk",
@@ -76,52 +125,39 @@ const columns: ColumnDef<MahasiswaRow>[] = [
     },
   },
   {
-    accessorKey: "dosen_name",
-    header: "Dosen Wali",
+    accessorKey: "sks_lulus",
+    header: () => <div className="text-center">SKS Lulus</div>,
     cell: ({ row }) => (
-      <span className="text-sm">{row.getValue("dosen_name") || "-"}</span>
+      <div className="text-center">{row.getValue("sks_lulus") ?? "-"}</div>
     ),
   },
   {
-    accessorKey: "krs_ta1",
-    header: () => <div className="text-center">KRS TA1</div>,
-    cell: ({ row }) => {
-      const val = row.getValue("krs_ta1") as number;
-      return (
-        <div className="flex justify-center">
-          <Badge
-            variant="outline"
-            className={
-              val
-                ? "bg-green-100 text-green-700 border-green-200 font-medium"
-                : "bg-gray-100 text-gray-500 border-gray-200"
-            }
-          >
-            {val ? "Ya" : "Tidak"}
-          </Badge>
-        </div>
-      );
-    },
+    accessorKey: "sks_aktif",
+    header: () => <div className="text-center">SKS Aktif</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("sks_aktif") ?? "-"}</div>
+    ),
   },
   {
-    accessorKey: "krs_ta2",
-    header: () => <div className="text-center">KRS TA2</div>,
+    accessorKey: "sks_gagal",
+    header: () => <div className="text-center">SKS Gagal</div>,
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("sks_gagal") ?? "-"}</div>
+    ),
+  },
+  {
+    accessorKey: "minat",
+    header: "Minat",
+    cell: ({ row }) => (
+      <span className="text-sm">{row.getValue("minat") || "-"}</span>
+    ),
+  },
+  {
+    accessorKey: "cuti",
+    header: "Cuti",
     cell: ({ row }) => {
-      const val = row.getValue("krs_ta2") as number;
-      return (
-        <div className="flex justify-center">
-          <Badge
-            variant="outline"
-            className={
-              val
-                ? "bg-green-100 text-green-700 border-green-200 font-medium"
-                : "bg-gray-100 text-gray-500 border-gray-200"
-            }
-          >
-            {val ? "Ya" : "Tidak"}
-          </Badge>
-        </div>
-      );
+      const cuti = row.getValue("cuti") as string | null;
+      return <span className="text-sm">{cuti === "yes" ? "Ya" : "Tidak"}</span>;
     },
   },
 ];
@@ -132,15 +168,24 @@ const SyncDataMahasiswaPage = () => {
   const limit = Number(searchParams.get("limit")) || 10;
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProdi, setSelectedProdi] = useState("all");
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const mutateKey = ["mahasiswa-list", page, limit, searchTerm];
+  const mutateKey = ["mahasiswa-list", page, limit, searchTerm, selectedProdi];
 
-  const { data: response, error, isLoading } = useSWR(
-    mutateKey,
-    () => fetcher(page, limit, searchTerm),
-    { dedupingInterval: 1000 }
+  const {
+    data: response,
+    error,
+    isLoading,
+  } = useSWR(mutateKey, () => fetcher(page, limit, searchTerm, selectedProdi), {
+    dedupingInterval: 1000,
+  });
+
+  const { data: prodiResponse } = useSWR("prodi-list-fakultas", () =>
+    ProdiFakultasService.getAll(1000)
   );
+  const prodiList: Prodi[] =
+    prodiResponse?.data?.data ?? prodiResponse?.data ?? [];
 
   const rawData = response?.data ?? [];
   const data: MahasiswaRow[] = Array.isArray(rawData) ? rawData : [];
@@ -172,7 +217,8 @@ const SyncDataMahasiswaPage = () => {
           titleItems={[
             {
               title: "Sinkronisasi Data Mahasiswa",
-              subtitle: "Sinkronkan data mahasiswa fakultas dengan sistem pusat.",
+              subtitle:
+                "Sinkronkan data mahasiswa fakultas dengan sistem pusat.",
             },
           ]}
         />
@@ -203,15 +249,31 @@ const SyncDataMahasiswaPage = () => {
       />
 
       <div className="mt-4 flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
-        <div className="relative w-full md:w-1/4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Cari nama atau NIM..."
-            className="pl-9 h-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Cari nama atau NIM..."
+              className="h-10 pl-9"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <Select value={selectedProdi} onValueChange={setSelectedProdi}>
+            <SelectTrigger className="h-10 w-full md:w-48">
+              <SelectValue placeholder="Semua Prodi" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Prodi</SelectItem>
+              {prodiList.map((prodi) => (
+                <SelectItem key={prodi.id} value={prodi.kode_prodi}>
+                  {prodi.nama}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <Button onClick={handleSyncData} disabled={isSyncing} className="h-10">

@@ -17,6 +17,16 @@ export type Mahasiswa = {
   jalur_sta1: string | null;
   created_at_sta2: string | null;
   jalur_sta2: string | null;
+  prodi: string | null;
+  kode_prodi: string | null;
+  angkatan: string | null;
+  semester_aktif: number | null;
+  status: string | null;
+  sks_lulus: number | null;
+  sks_aktif: number | null;
+  sks_gagal: number | null;
+  minat: string | null;
+  cuti: string | null;
 };
 
 const MahasiswaFakultas = ({
@@ -29,12 +39,18 @@ const MahasiswaFakultas = ({
   const endpoint = "/mahasiswa";
 
   return {
-    getAll: (params?: { page?: number; limit?: number; search?: string }) => {
+    getAll: (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      prodi?: string;
+    }) => {
       const headers = config();
       const queryParams = new URLSearchParams();
       if (params?.page) queryParams.append("page", params.page.toString());
       if (params?.limit) queryParams.append("limit", params.limit.toString());
       if (params?.search) queryParams.append("search", params.search);
+      if (params?.prodi) queryParams.append("prodi", params.prodi);
       const qs = queryParams.toString();
 
       return fetch(`${baseUrl}${endpoint}${qs ? `?${qs}` : ""}`, {
