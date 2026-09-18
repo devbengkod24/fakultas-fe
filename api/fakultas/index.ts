@@ -11,6 +11,7 @@ import LaporanEksekutifFakultas from "./laporan-eksekutif";
 import MataKuliahFakultas from "./mata-kuliah";
 import MahasiswaFakultas from "./mahasiswa";
 import KrsFakultas from "./krs";
+import KelompokMatkulFakultas from "./kelompok-matkul";
 import ProdiFakultas from "./prodi";
 
 const FIK_URL = `${API_URL}`;
@@ -88,6 +89,11 @@ export const MahasiswaFakultasService = MahasiswaFakultas({
 });
 
 export const KrsFakultasService = KrsFakultas({
+  baseUrl: FIK_URL,
+  config: () => configureHeaders({ skipProdiId: true }),
+});
+
+export const KelompokMatkulFakultasService = KelompokMatkulFakultas({
   baseUrl: FIK_URL,
   config: () => configureHeaders({ skipProdiId: true }),
 });

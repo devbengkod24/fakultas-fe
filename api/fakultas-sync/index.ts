@@ -70,12 +70,27 @@ const FakultasSync = ({
       return post(`/mahasiswa${qs ? `?${qs}` : ""}`);
     },
 
-    syncKrsKhs: (body: {
+    syncKrsKhs: (params?: {
       prodi?: string;
       nim?: string;
-      limit?: number;
-      offset?: number;
-    }) => post("/krs-khs", body),
+    }) => {
+      const queryParams = new URLSearchParams();
+      if (params?.prodi) queryParams.append("prodi", params.prodi);
+      if (params?.nim) queryParams.append("nim", params.nim);
+      const qs = queryParams.toString();
+      return post(`/krs-khs${qs ? `?${qs}` : ""}`);
+    },
+
+    syncKelompokMatkul: (params?: {
+      prodi?: string;
+      nim?: string;
+    }) => {
+      const queryParams = new URLSearchParams();
+      if (params?.prodi) queryParams.append("prodi", params.prodi);
+      if (params?.nim) queryParams.append("nim", params.nim);
+      const qs = queryParams.toString();
+      return post(`/kelompok-matkul${qs ? `?${qs}` : ""}`);
+    },
 
     syncYudisium: (params?: {
       nim?: string;

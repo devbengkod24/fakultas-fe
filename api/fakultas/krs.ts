@@ -20,7 +20,7 @@ const KrsFakultas = ({
   baseUrl: string;
   config: () => Headers;
 }) => {
-  const endpoint = "/krs";
+  const endpoint = "/fik/krs";
 
   return {
     getAll: (params?: {
