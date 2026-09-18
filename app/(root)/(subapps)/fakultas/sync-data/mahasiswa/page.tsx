@@ -13,6 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -170,6 +179,14 @@ const SyncDataMahasiswaPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProdi, setSelectedProdi] = useState("all");
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
+  const [syncFilters, setSyncFilters] = useState({
+    prodi: "all",
+    nim: "",
+    angkatan: "",
+    status: "",
+    status_mhs: "",
+  });
 
   const mutateKey = ["mahasiswa-list", page, limit, searchTerm, selectedProdi];
 
@@ -177,6 +194,7 @@ const SyncDataMahasiswaPage = () => {
     data: response,
     error,
     isLoading,
+    mutate,
   } = useSWR(mutateKey, () => fetcher(page, limit, searchTerm, selectedProdi), {
     dedupingInterval: 1000,
   });
@@ -193,11 +211,19 @@ const SyncDataMahasiswaPage = () => {
   const lastPage = pagination?.last_page ?? 1;
   const totalData = pagination?.total ?? 0;
 
-  const handleSyncData = async () => {
+  const handleStartSync = async () => {
     setIsSyncing(true);
     try {
-      const res = await FakultasSyncService.syncMahasiswa();
+      const res = await FakultasSyncService.syncMahasiswa({
+        prodi: syncFilters.prodi !== "all" ? syncFilters.prodi : undefined,
+        nim: syncFilters.nim || undefined,
+        angkatan: syncFilters.angkatan || undefined,
+        status: syncFilters.status || undefined,
+        status_mhs: syncFilters.status_mhs || undefined,
+      });
       handleToastResponse(res);
+      mutate();
+      setIsSyncDialogOpen(false);
     } catch {
       toast.error("Gagal melakukan sinkronisasi data mahasiswa");
     } finally {
@@ -276,7 +302,11 @@ const SyncDataMahasiswaPage = () => {
           </Select>
         </div>
 
-        <Button onClick={handleSyncData} disabled={isSyncing} className="h-10">
+        <Button
+          onClick={() => setIsSyncDialogOpen(true)}
+          disabled={isSyncing}
+          className="h-10"
+        >
           <RefreshCw
             className={`mr-2 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
           />
@@ -297,6 +327,110 @@ const SyncDataMahasiswaPage = () => {
           }}
         />
       </div>
+
+      <Dialog open={isSyncDialogOpen} onOpenChange={setIsSyncDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Sync Data Mahasiswa</DialogTitle>
+            <DialogDescription>
+              Kosongkan semua field untuk sync seluruh mahasiswa 7 prodi FIK.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
+              <Label>Prodi</Label>
+              <Select
+                value={syncFilters.prodi}
+                onValueChange={(value) =>
+                  setSyncFilters((prev) => ({ ...prev, prodi: value }))
+                }
+              >
+                <SelectTrigger className="h-10 w-full">
+                  <SelectValue placeholder="Semua Prodi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Prodi</SelectItem>
+                  {prodiList.map((prodi) => (
+                    <SelectItem key={prodi.id} value={prodi.kode_prodi}>
+                      {prodi.nama}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>NIM</Label>
+              <Input
+                placeholder="Kosongkan untuk semua NIM"
+                value={syncFilters.nim}
+                onChange={(e) =>
+                  setSyncFilters((prev) => ({ ...prev, nim: e.target.value }))
+                }
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Angkatan</Label>
+              <Input
+                placeholder="Contoh: 2024"
+                value={syncFilters.angkatan}
+                onChange={(e) =>
+                  setSyncFilters((prev) => ({
+                    ...prev,
+                    angkatan: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Status</Label>
+              <Input
+                placeholder="Contoh: aktif"
+                value={syncFilters.status}
+                onChange={(e) =>
+                  setSyncFilters((prev) => ({
+                    ...prev,
+                    status: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Status Mahasiswa</Label>
+              <Input
+                placeholder="Opsional"
+                value={syncFilters.status_mhs}
+                onChange={(e) =>
+                  setSyncFilters((prev) => ({
+                    ...prev,
+                    status_mhs: e.target.value,
+                  }))
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsSyncDialogOpen(false)}
+              disabled={isSyncing}
+            >
+              Batal
+            </Button>
+            <Button onClick={handleStartSync} disabled={isSyncing}>
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
+              />
+              {isSyncing ? "Menyinkronkan..." : "Mulai Sync"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
