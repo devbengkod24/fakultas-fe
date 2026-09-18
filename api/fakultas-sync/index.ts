@@ -73,10 +73,12 @@ const FakultasSync = ({
     syncKrsKhs: (params?: {
       prodi?: string;
       nim?: string;
+      max_items?: number;
     }) => {
       const queryParams = new URLSearchParams();
       if (params?.prodi) queryParams.append("prodi", params.prodi);
       if (params?.nim) queryParams.append("nim", params.nim);
+      if (params?.max_items) queryParams.append("max_items", String(params.max_items));
       const qs = queryParams.toString();
       return post(`/krs-khs${qs ? `?${qs}` : ""}`);
     },
@@ -84,10 +86,12 @@ const FakultasSync = ({
     syncKelompokMatkul: (params?: {
       prodi?: string;
       nim?: string;
+      max_items?: number;
     }) => {
       const queryParams = new URLSearchParams();
       if (params?.prodi) queryParams.append("prodi", params.prodi);
       if (params?.nim) queryParams.append("nim", params.nim);
+      if (params?.max_items) queryParams.append("max_items", String(params.max_items));
       const qs = queryParams.toString();
       return post(`/kelompok-matkul${qs ? `?${qs}` : ""}`);
     },

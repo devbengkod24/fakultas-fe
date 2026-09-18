@@ -156,6 +156,7 @@ const SyncDataKrsMahasiswaPage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProdi, setSelectedProdi] = useState("all");
+  const [maxItems, setMaxItems] = useState("");
   const [syncPhase, setSyncPhase] = useState<"idle" | "kelompok" | "krs">("idle");
 
   const mutateKey = ["krs-list", page, limit, searchTerm, selectedProdi];
@@ -175,12 +176,13 @@ const SyncDataKrsMahasiswaPage = () => {
   const handleSyncData = async () => {
     try {
       const prodi = selectedProdi !== "all" ? selectedProdi : "A11";
+      const max_items = maxItems ? parseInt(maxItems) : undefined;
 
       setSyncPhase("kelompok");
-      await FakultasSyncService.syncKelompokMatkul({ prodi });
+      await FakultasSyncService.syncKelompokMatkul({ prodi, max_items });
 
       setSyncPhase("krs");
-      const res = await FakultasSyncService.syncKrsKhs({ prodi });
+      const res = await FakultasSyncService.syncKrsKhs({ prodi, max_items });
 
       handleToastResponse(res);
     } catch (err: any) {
@@ -262,6 +264,15 @@ const SyncDataKrsMahasiswaPage = () => {
               </SelectContent>
             </Select>
           </div>
+
+          <Input
+            type="number"
+            placeholder="Max data (kosong = semua)"
+            className="h-10 w-full md:w-48"
+            value={maxItems}
+            onChange={(e) => setMaxItems(e.target.value)}
+            min={1}
+          />
 
           <Button onClick={handleSyncData} disabled={syncPhase !== "idle"} className="h-10 min-w-[200px]">
             <RefreshCw
