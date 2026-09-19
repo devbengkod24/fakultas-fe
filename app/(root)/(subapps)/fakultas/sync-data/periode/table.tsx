@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { PeriodeFakultasService } from "@/api/fakultas";
 import { FakultasSyncService } from "@/api";
 import SearchControl from "@/components/search-control";
+import { SyncResultModal, SyncResultData } from "@/components/sync-result-modal";
 import { handleToastResponse } from "@/lib/toast-response";
 import {
   Select,
@@ -520,6 +521,12 @@ export default function TableSyncPeriode() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedPeriode, setSelectedPeriode] = useState<Periode | null>(null);
+  const [syncResult, setSyncResult] = useState<{
+    show: boolean;
+    success: boolean;
+    message: string;
+    data: SyncResultData;
+  }>({ show: false, success: true, message: "", data: null });
 
   const handleEdit = (periode: Periode) => {
     setSelectedPeriode(periode);
@@ -563,12 +570,13 @@ export default function TableSyncPeriode() {
     setIsSyncing(true);
     try {
       const res = await FakultasSyncService.syncPeriode();
+      setSyncResult({
+        show: true,
+        success: res?.success !== false,
+        message: res?.message ?? "Sync selesai",
+        data: res?.data ?? null,
+      });
       mutate(mutateKey);
-      if (res?.success === false) {
-        toast.error(res.message || "Gagal sinkronisasi data periode");
-      } else {
-        handleToastResponse(res);
-      }
     } catch (error: any) {
       toast.error("Gagal melakukan sinkronisasi data periode");
     } finally {
@@ -751,6 +759,14 @@ export default function TableSyncPeriode() {
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
         onSuccess={handleEditSuccess}
+      />
+
+      <SyncResultModal
+        open={syncResult.show}
+        onOpenChange={(open) => setSyncResult((prev) => ({ ...prev, show: open }))}
+        success={syncResult.success}
+        message={syncResult.message}
+        data={syncResult.data}
       />
     </>
   );

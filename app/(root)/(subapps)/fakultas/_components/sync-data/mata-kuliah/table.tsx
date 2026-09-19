@@ -6,13 +6,13 @@ import { FilterSyncMataKuliah } from "./filter";
 import { Columns } from "./column";
 import { useSearchParams } from "next/navigation";
 import { MataKuliahSync } from "@/types/fakultas/sync-data/mata-kuliah";
-import { handleToastResponse } from "@/lib/toast-response";
 import useSWR, { mutate } from "swr";
 import EmptyState from "@/components/empty-state";
 import { BookOpen, AlertTriangle } from "lucide-react";
 import { MataKuliahFakultasService } from "@/api/fakultas";
 import { FakultasSyncService } from "@/api";
 import { toast } from "sonner";
+import { SyncResultModal, SyncResultData } from "@/components/sync-result-modal";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -46,6 +46,12 @@ export function DataDaftarMataKuliah() {
   const semesterFromUrl = searchParams.get("semester") || "all";
 
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{
+    show: boolean;
+    success: boolean;
+    message: string;
+    data: SyncResultData;
+  }>({ show: false, success: true, message: "", data: null });
 
   const {
     data: allData,
@@ -115,8 +121,13 @@ export function DataDaftarMataKuliah() {
     setIsSyncing(true);
     try {
       const res = await FakultasSyncService.syncMatkul();
+      setSyncResult({
+        show: true,
+        success: res?.success !== false,
+        message: res?.message ?? "Sync selesai",
+        data: res?.data ?? null,
+      });
       mutate("sync-mata-kuliah");
-      handleToastResponse(res);
     } catch {
       toast.error("Gagal melakukan sinkronisasi data mata kuliah");
     } finally {
@@ -166,6 +177,14 @@ export function DataDaftarMataKuliah() {
           }}
         />
       )}
+
+      <SyncResultModal
+        open={syncResult.show}
+        onOpenChange={(open) => setSyncResult((prev) => ({ ...prev, show: open }))}
+        success={syncResult.success}
+        message={syncResult.message}
+        data={syncResult.data}
+      />
     </div>
   );
 }

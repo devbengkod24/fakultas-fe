@@ -20,10 +20,12 @@ const ProdiFakultas = ({
   const endpoint = "/fik/prodi";
 
   return {
-    getAll: (limit?: number) => {
+    getAll: (page?: number, limit?: number, search?: string) => {
       const headers = config();
       const params = new URLSearchParams();
+      if (page) params.append("page", page.toString());
       if (limit) params.append("limit", limit.toString());
+      if (search) params.append("search", search);
 
       return fetch(`${baseUrl}${endpoint}?${params.toString()}`, {
         method: "GET",

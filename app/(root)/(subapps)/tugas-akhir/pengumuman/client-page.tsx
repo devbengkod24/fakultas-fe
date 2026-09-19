@@ -60,6 +60,8 @@ function PengumumanClientPage() {
 
     toast.promise(promise, {
       loading: "Menambahkan pengumuman...",
+      success: () => "Pengumuman berhasil ditambahkan",
+      error: (err) => err?.message || "Gagal menambahkan pengumuman",
     });
   };
 
@@ -76,6 +78,8 @@ function PengumumanClientPage() {
 
     toast.promise(promise, {
       loading: "Memperbarui pengumuman...",
+      success: () => "Pengumuman berhasil diperbarui",
+      error: (err) => err?.message || "Gagal memperbarui pengumuman",
     });
   };
 
@@ -93,6 +97,8 @@ function PengumumanClientPage() {
 
       toast.promise(promise, {
         loading: "Menghapus pengumuman...",
+        success: () => "Pengumuman berhasil dihapus",
+        error: (err) => err?.message || "Gagal menghapus pengumuman",
       });
     }
   };

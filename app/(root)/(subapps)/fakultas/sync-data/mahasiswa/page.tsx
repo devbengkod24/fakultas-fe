@@ -32,7 +32,7 @@ import { MahasiswaFakultasService, ProdiFakultasService } from "@/api/fakultas";
 import type { Mahasiswa } from "@/api/fakultas/mahasiswa";
 import type { Prodi } from "@/api/fakultas/prodi";
 import { FakultasSyncService } from "@/api";
-import { handleToastResponse } from "@/lib/toast-response";
+import { SyncResultModal, SyncResultData } from "@/components/sync-result-modal";
 import EmptyState from "@/components/empty-state";
 import { AlertCircle } from "lucide-react";
 
@@ -229,6 +229,12 @@ const SyncDataMahasiswaPage = () => {
     status: "",
     status_mhs: "",
   });
+  const [syncResult, setSyncResult] = useState<{
+    show: boolean;
+    success: boolean;
+    message: string;
+    data: SyncResultData;
+  }>({ show: false, success: true, message: "", data: null });
 
   const mutateKey = ["mahasiswa-list", page, limit, searchTerm, selectedProdi];
 
@@ -242,7 +248,7 @@ const SyncDataMahasiswaPage = () => {
   });
 
   const { data: prodiResponse } = useSWR("prodi-list-fakultas", () =>
-    ProdiFakultasService.getAll(1000)
+    ProdiFakultasService.getAll(1, 100)
   );
   const prodiList: Prodi[] =
     prodiResponse?.data?.data ?? prodiResponse?.data ?? [];
@@ -263,7 +269,15 @@ const SyncDataMahasiswaPage = () => {
         status: syncFilters.status || undefined,
         status_mhs: syncFilters.status_mhs || undefined,
       });
-      handleToastResponse(res);
+      const prodiName = syncFilters.prodi !== "all"
+        ? prodiList.find((p) => p.kode_prodi === syncFilters.prodi)?.nama ?? syncFilters.prodi
+        : "Semua Prodi FIK";
+      setSyncResult({
+        show: true,
+        success: res?.success !== false,
+        message: res?.message ?? "Sync selesai",
+        data: res?.data ?? null,
+      });
       mutate();
       setIsSyncDialogOpen(false);
     } catch {
@@ -482,6 +496,14 @@ const SyncDataMahasiswaPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SyncResultModal
+        open={syncResult.show}
+        onOpenChange={(open) => setSyncResult((prev) => ({ ...prev, show: open }))}
+        success={syncResult.success}
+        message={syncResult.message}
+        data={syncResult.data}
+      />
     </div>
   );
 };

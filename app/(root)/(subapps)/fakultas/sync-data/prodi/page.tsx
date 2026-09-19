@@ -10,11 +10,11 @@ import useSWR, { mutate } from "swr";
 import { toast } from "sonner";
 import { ProdiFakultasService } from "@/api/fakultas";
 import { FakultasSyncService } from "@/api";
-import { handleToastResponse } from "@/lib/toast-response";
 import SearchControl from "@/components/search-control";
 import EmptyState from "@/components/empty-state";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { SyncResultModal, SyncResultData } from "@/components/sync-result-modal";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -27,86 +27,93 @@ type ProdiRow = {
   category: { id: number; nama: string } | null;
 };
 
-const fetcher = () => ProdiFakultasService.getAll(1000);
-
-const columns: ColumnDef<ProdiRow>[] = [
-  {
-    id: "no",
-    header: "No",
-    cell: ({ row }) => <span className="text-muted-foreground">{row.index + 1}</span>,
-  },
-  {
-    accessorKey: "kode_prodi",
-    header: "Kode Prodi",
-    cell: ({ row }) => (
-      <span className="font-mono text-xs font-semibold bg-gray-50 px-2 py-1 rounded border border-gray-100">
-        {row.original.kode_prodi}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "category",
-    header: "Kategori",
-    cell: ({ row }) => (
-      <span className="text-sm">{row.original.category?.nama ?? "-"}</span>
-    ),
-  },
-  {
-    accessorKey: "nama",
-    header: "Nama Program Studi",
-    cell: ({ row }) => (
-      <span className="font-medium text-sm">{row.original.nama}</span>
-    ),
-  },
-  {
-    accessorKey: "gelar",
-    header: "Gelar",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
-        {row.original.gelar}
-      </Badge>
-    ),
-  },
-];
+const fetcher = (page: number, limit: number, search: string) =>
+  ProdiFakultasService.getAll(page, limit, search).then((res) => res);
 
 export default function SyncDataProdiPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
   const search = searchParams.get("search") || "";
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
 
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{
+    show: boolean;
+    success: boolean;
+    message: string;
+    data: SyncResultData;
+  }>({ show: false, success: true, message: "", data: null });
 
-  const mutateKey = ["prodi-list"];
-  const { data: response, error, isLoading } = useSWR(mutateKey, fetcher, {
-    dedupingInterval: 1000,
-  });
+  const mutateKey = ["prodi-list", page, limit, search];
+  const { data: response, error, isLoading } = useSWR(
+    mutateKey,
+    () => fetcher(page, limit, search),
+    { dedupingInterval: 1000 }
+  );
 
   const rawProdi = response?.data?.data ?? response?.data ?? [];
-  const allData: ProdiRow[] = Array.isArray(rawProdi) ? rawProdi : [];
+  const prodi: ProdiRow[] = Array.isArray(rawProdi) ? rawProdi : [];
 
-  const filteredData = search
-    ? allData.filter(
-        (item) =>
-          item.nama?.toLowerCase().includes(search.toLowerCase()) ||
-          item.kode_prodi?.toLowerCase().includes(search.toLowerCase()) ||
-          item.gelar?.toLowerCase().includes(search.toLowerCase()) ||
-          item.category?.nama?.toLowerCase().includes(search.toLowerCase())
-      )
-    : allData;
+  const pagination = response?.data?.meta?.pagination ?? response?.meta?.pagination;
+  const lastPages = pagination?.last_page ?? 1;
+  const totalData = pagination?.total ?? 0;
 
-  const data = filteredData;
-  const totalData = data.length;
-  const lastPage = Math.ceil(totalData / limit) || 1;
-  const startIndex = (page - 1) * limit;
-  const paginatedData = data.slice(startIndex, startIndex + limit);
+  const columns: ColumnDef<ProdiRow>[] = [
+    {
+      id: "no",
+      header: "No",
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {(page - 1) * limit + row.index + 1}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "kode_prodi",
+      header: "Kode Prodi",
+      cell: ({ row }) => (
+        <span className="font-mono text-xs font-semibold bg-gray-50 px-2 py-1 rounded border border-gray-100">
+          {row.original.kode_prodi}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "category",
+      header: "Kategori",
+      cell: ({ row }) => (
+        <span className="text-sm">{row.original.category?.nama ?? "-"}</span>
+      ),
+    },
+    {
+      accessorKey: "nama",
+      header: "Nama Program Studi",
+      cell: ({ row }) => (
+        <span className="font-medium text-sm">{row.original.nama}</span>
+      ),
+    },
+    {
+      accessorKey: "gelar",
+      header: "Gelar",
+      cell: ({ row }) => (
+        <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+          {row.original.gelar}
+        </Badge>
+      ),
+    },
+  ];
 
   const handleSync = async () => {
     setIsSyncing(true);
     try {
       const res = await FakultasSyncService.syncProdi();
-      handleToastResponse(res);
+      setSyncResult({
+        show: true,
+        success: res?.success !== false,
+        message: res?.message ?? "Sync selesai",
+        data: res?.data ?? null,
+      });
       mutate(mutateKey);
     } catch {
       toast.error("Gagal melakukan sinkronisasi data prodi");
@@ -140,6 +147,8 @@ export default function SyncDataProdiPage() {
       </div>
     );
   }
+
+  const hasData = prodi && prodi.length > 0;
 
   return (
     <div>
@@ -175,7 +184,7 @@ export default function SyncDataProdiPage() {
           </div>
         </div>
 
-        {!isLoading && paginatedData.length === 0 ? (
+        {!isLoading && !hasData ? (
           <EmptyState
             icon={Building2}
             title="Belum ada data prodi"
@@ -185,17 +194,25 @@ export default function SyncDataProdiPage() {
         ) : (
           <DataTable
             columns={columns}
-            data={paginatedData}
+            data={prodi}
             loading={isLoading}
             pagination={{
               currentPage: page,
-              lastPage: lastPage,
+              lastPage: lastPages,
               limit: limit,
               total: totalData,
             }}
           />
         )}
       </div>
+
+      <SyncResultModal
+        open={syncResult.show}
+        onOpenChange={(open) => setSyncResult((prev) => ({ ...prev, show: open }))}
+        success={syncResult.success}
+        message={syncResult.message}
+        data={syncResult.data}
+      />
     </div>
   );
 }
