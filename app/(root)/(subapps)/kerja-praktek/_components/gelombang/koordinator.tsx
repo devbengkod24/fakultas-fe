@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 import type { Gelombang } from "@/types/kerja-praktek/gelombang"
 import { GelombangTable } from "./table"
 import { GelombangForm } from "./form"
@@ -30,9 +31,13 @@ export default function GelombangKoordinator() {
 
   const { activeProdiId } = useProfile();
 
+  const searchParams = useSearchParams();
+  const search = searchParams.get("search") ?? "";
+  const periode_id = Number(searchParams.get("periode_id")) || undefined;
+
   const { data, error, isLoading, mutate } = useSWR(
-    ["gelombang", undefined, "", activeProdiId ?? undefined],
-    () => fetcher(undefined, "", activeProdiId ?? undefined),
+    ["gelombang", periode_id, search, activeProdiId ?? undefined],
+    () => fetcher(periode_id, search, activeProdiId ?? undefined),
     { revalidateOnFocus: false }
   );
 
