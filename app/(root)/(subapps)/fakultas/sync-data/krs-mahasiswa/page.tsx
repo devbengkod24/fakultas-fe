@@ -14,6 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -156,8 +166,10 @@ const SyncDataKrsMahasiswaPage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProdi, setSelectedProdi] = useState("all");
-  const [maxItems, setMaxItems] = useState("");
   const [syncPhase, setSyncPhase] = useState<"idle" | "kelompok" | "krs">("idle");
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false);
+  const [syncProdi, setSyncProdi] = useState("A11");
+  const [syncMaxItems, setSyncMaxItems] = useState("");
 
   const mutateKey = ["krs-list", page, limit, searchTerm, selectedProdi];
 
@@ -174,15 +186,15 @@ const SyncDataKrsMahasiswaPage = () => {
   const totalData = pagination?.total ?? 0;
 
   const handleSyncData = async () => {
+    setSyncDialogOpen(false);
     try {
-      const prodi = selectedProdi !== "all" ? selectedProdi : "A11";
-      const max_items = maxItems ? parseInt(maxItems) : undefined;
+      const max_items = syncMaxItems ? parseInt(syncMaxItems) : undefined;
 
       setSyncPhase("kelompok");
-      await FakultasSyncService.syncKelompokMatkul({ prodi, max_items });
+      await FakultasSyncService.syncKelompokMatkul({ prodi: syncProdi, max_items });
 
       setSyncPhase("krs");
-      const res = await FakultasSyncService.syncKrsKhs({ prodi, max_items });
+      const res = await FakultasSyncService.syncKrsKhs({ prodi: syncProdi, max_items });
 
       handleToastResponse(res);
     } catch (err: any) {
@@ -265,25 +277,66 @@ const SyncDataKrsMahasiswaPage = () => {
             </Select>
           </div>
 
-          <Input
-            type="number"
-            placeholder="Max data (kosong = semua)"
-            className="h-10 w-full md:w-48"
-            value={maxItems}
-            onChange={(e) => setMaxItems(e.target.value)}
-            min={1}
-          />
-
-          <Button onClick={handleSyncData} disabled={syncPhase !== "idle"} className="h-10 min-w-[200px]">
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${syncPhase !== "idle" ? "animate-spin" : ""}`}
-            />
-            {syncPhase === "idle"
-              ? "Sync Data"
-              : syncPhase === "kelompok"
-              ? "Syncing Kelompok Matkul..."
-              : "Syncing KRS/KHS..."}
-          </Button>
+          <Dialog open={syncDialogOpen} onOpenChange={setSyncDialogOpen}>
+            <DialogTrigger asChild>
+              <Button disabled={syncPhase !== "idle"} className="h-10 min-w-[200px]">
+                <RefreshCw
+                  className={`mr-2 h-4 w-4 ${syncPhase !== "idle" ? "animate-spin" : ""}`}
+                />
+                {syncPhase === "idle"
+                  ? "Sync Data"
+                  : syncPhase === "kelompok"
+                  ? "Syncing Kelompok Matkul..."
+                  : "Syncing KRS/KHS..."}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Sinkronisasi KRS/KHS</DialogTitle>
+                <DialogDescription>
+                  Pilih program studi dan jumlah data yang ingin disinkronkan. Proses akan menjalankan sync Kelompok Matkul terlebih dahulu, lalu sync KRS/KHS.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label>Program Studi</Label>
+                  <Select value={syncProdi} onValueChange={setSyncProdi}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Prodi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A11">S1 Teknik Informatika</SelectItem>
+                      <SelectItem value="A12">S1 Sistem Informasi</SelectItem>
+                      <SelectItem value="A14">S1 Teknologi Informasi</SelectItem>
+                      <SelectItem value="A15">D3 Teknik Komputer</SelectItem>
+                      <SelectItem value="A16">D3 Manajemen Informatika</SelectItem>
+                      <SelectItem value="A17">D3 Komputerisasi Akuntansi</SelectItem>
+                      <SelectItem value="A22">S1 Informatika (Kediri)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Jumlah Data Maksimal</Label>
+                  <Input
+                    type="number"
+                    placeholder="Kosong = ambil semua data"
+                    value={syncMaxItems}
+                    onChange={(e) => setSyncMaxItems(e.target.value)}
+                    min={1}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSyncDialogOpen(false)}>
+                  Batal
+                </Button>
+                <Button onClick={handleSyncData}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Mulai Sync
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
