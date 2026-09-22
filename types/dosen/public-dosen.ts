@@ -15,6 +15,11 @@ export interface PublicJadwalMengajar {
 export interface PublicKeterangan {
   id: number;
   keterangan: string;
+  judul?: string | null;
+  tahun?: number | null;
+  dana_dikti?: number | null;
+  dana_perguruan_tinggi?: number | null;
+  dana_institusi_lain?: number | null;
 }
 
 export interface PublicDosen {

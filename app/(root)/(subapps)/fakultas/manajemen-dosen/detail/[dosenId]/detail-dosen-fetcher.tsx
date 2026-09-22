@@ -198,10 +198,17 @@ export default function DetailDosenFetcher({
     pengabdian: (rawDosen.pengabdian ?? []).map((p: any) => ({
       id: p.id,
       keterangan: p.keterangan,
+      judul: p.judul,
+      tahun: p.tahun,
+      dana_dikti: p.dana_dikti,
+      dana_perguruan_tinggi: p.dana_perguruan_tinggi,
+      dana_institusi_lain: p.dana_institusi_lain,
     })),
     kekayaan_intelektual: (rawDosen.kekayaan_intelektual ?? []).map((k: any) => ({
       id: k.id,
       keterangan: k.keterangan,
+      judul: k.judul,
+      tahun: k.tahun,
     })),
   };
 

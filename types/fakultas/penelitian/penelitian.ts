@@ -64,11 +64,18 @@ export interface JadwalMengajar {
 export interface Pengabdian {
   id: number;
   keterangan: string;
+  judul?: string | null;
+  tahun?: number | null;
+  dana_dikti?: number | null;
+  dana_perguruan_tinggi?: number | null;
+  dana_institusi_lain?: number | null;
 }
 
 export interface KekayaanIntelektual {
   id: number;
   keterangan: string;
+  judul?: string | null;
+  tahun?: number | null;
 }
 
 export interface MahasiswaBimbingan {

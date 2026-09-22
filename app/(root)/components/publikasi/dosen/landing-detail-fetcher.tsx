@@ -212,10 +212,17 @@ export default function LandingDetailDosenFetcher({
     pengabdian: (authorData?.pengabdian ?? []).map((p) => ({
       id: p.id,
       keterangan: p.keterangan,
+      judul: p.judul,
+      tahun: p.tahun,
+      dana_dikti: p.dana_dikti,
+      dana_perguruan_tinggi: p.dana_perguruan_tinggi,
+      dana_institusi_lain: p.dana_institusi_lain,
     })),
     kekayaan_intelektual: (authorData?.kekayaan_intelektual ?? []).map((k) => ({
       id: k.id,
       keterangan: k.keterangan,
+      judul: k.judul,
+      tahun: k.tahun,
     })),
     // Sections yang memang tidak tersedia di publik (hidden via conditional render):
     riwayat_karir: [],
