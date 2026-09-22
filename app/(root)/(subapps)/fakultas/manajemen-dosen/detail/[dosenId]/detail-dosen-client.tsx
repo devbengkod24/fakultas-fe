@@ -64,7 +64,7 @@ export default function DetailDosenClient({
     type: KeteranganType;
     title: string;
     itemId?: number;
-    initialValue?: string;
+    initialValue?: { keterangan?: string; judul?: string | null; tahun?: number | null };
   } | null>(null);
   const [jadwalDialog, setJadwalDialog] = useState<{
     itemId?: number;
@@ -243,7 +243,7 @@ export default function DetailDosenClient({
                                 type: "riwayat-karir",
                                 title: "Edit Riwayat Karir",
                                 itemId: karir.id,
-                                initialValue: karir.keterangan,
+                                initialValue: { keterangan: karir.keterangan },
                               })}
                             >
                               <Pencil className="h-3.5 w-3.5" />
@@ -327,7 +327,7 @@ export default function DetailDosenClient({
                                 type: "riwayat-pendidikan",
                                 title: "Edit Riwayat Pendidikan",
                                 itemId: pendidikan.id,
-                                initialValue: pendidikan.keterangan,
+                                initialValue: { keterangan: pendidikan.keterangan },
                               })}
                             >
                               <Pencil className="h-3.5 w-3.5" />

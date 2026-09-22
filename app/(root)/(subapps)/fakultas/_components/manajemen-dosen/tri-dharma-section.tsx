@@ -195,7 +195,14 @@ export function TridharmaSection({
     type: KeteranganType;
     title: string;
     itemId?: number;
-    initialValue?: string;
+    initialValue?: {
+      keterangan?: string;
+      judul?: string | null;
+      tahun?: number | null;
+      dana_dikti?: number | null;
+      dana_perguruan_tinggi?: number | null;
+      dana_institusi_lain?: number | null;
+    };
   } | null>(null);
 
   const handleDeleteKeterangan = async (type: KeteranganType, itemId: number) => {
@@ -256,6 +263,14 @@ export function TridharmaSection({
     return new Intl.NumberFormat("id-ID", {
       style: "currency", currency: "IDR", minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  // Data pengabdian selalu cuma isi 1 dari 3 sumber dana per kegiatan.
+  const getPengabdianDana = (p: Pengabdian) => {
+    if (p.dana_dikti) return { label: "Dana DIKTI", amount: p.dana_dikti };
+    if (p.dana_perguruan_tinggi) return { label: "Dana Internal", amount: p.dana_perguruan_tinggi };
+    if (p.dana_institusi_lain) return { label: "Dana Institusi Lain", amount: p.dana_institusi_lain };
+    return null;
   };
 
   return (
@@ -611,7 +626,7 @@ export function TridharmaSection({
                             className="p-5 hover:shadow-md transition-shadow border-l-4 border-l-primary-600"
                           >
                             <div className="flex items-start justify-between gap-3">
-                              <h3 className="text-lg font-semibold text-primary-600 flex-1">{p.keterangan}</h3>
+                              <h3 className="text-lg font-semibold text-primary-600 flex-1">{p.judul ?? p.keterangan}</h3>
                               {!readOnly && (
                                 <div className="flex gap-1 flex-shrink-0">
                                   <button
@@ -619,7 +634,14 @@ export function TridharmaSection({
                                       type: "pengabdian",
                                       title: "Edit Pengabdian",
                                       itemId: p.id,
-                                      initialValue: p.keterangan,
+                                      initialValue: {
+                                        keterangan: p.keterangan,
+                                        judul: p.judul,
+                                        tahun: p.tahun,
+                                        dana_dikti: p.dana_dikti,
+                                        dana_perguruan_tinggi: p.dana_perguruan_tinggi,
+                                        dana_institusi_lain: p.dana_institusi_lain,
+                                      },
                                     })}
                                     className="text-slate-500 hover:text-slate-700"
                                   >
@@ -653,6 +675,31 @@ export function TridharmaSection({
                                 </div>
                               )}
                             </div>
+                            {(() => {
+                              const dana = getPengabdianDana(p);
+                              if (!p.tahun && !dana) return null;
+                              return (
+                                <div className="flex flex-wrap items-center text-xs text-gray-500 gap-3 pt-2">
+                                  {p.tahun && (
+                                    <div className="flex items-center">
+                                      <Calendar className="w-4 h-4 mr-1" />
+                                      {p.tahun}
+                                    </div>
+                                  )}
+                                  {dana && (
+                                    <>
+                                      <div className="flex items-center">
+                                        <Banknote className="w-4 h-4 mr-1" />
+                                        {formatCurrency(dana.amount)}
+                                      </div>
+                                      <Badge variant="outline" className="uppercase">
+                                        {dana.label}
+                                      </Badge>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </Card>
                         ))}
                       </div>
@@ -691,7 +738,7 @@ export function TridharmaSection({
                         className="p-5 hover:shadow-md transition-shadow border-l-4 border-l-primary-600"
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <h3 className="text-lg font-semibold text-primary-600 flex-1">{k.keterangan}</h3>
+                          <h3 className="text-lg font-semibold text-primary-600 flex-1">{k.judul ?? k.keterangan}</h3>
                           {!readOnly && (
                             <div className="flex gap-1 flex-shrink-0">
                               <button
@@ -699,7 +746,7 @@ export function TridharmaSection({
                                   type: "kekayaan-intelektual",
                                   title: "Edit Kekayaan Intelektual",
                                   itemId: k.id,
-                                  initialValue: k.keterangan,
+                                  initialValue: { keterangan: k.keterangan, judul: k.judul, tahun: k.tahun },
                                 })}
                                 className="text-slate-500 hover:text-slate-700"
                               >
@@ -733,6 +780,12 @@ export function TridharmaSection({
                             </div>
                           )}
                         </div>
+                        {k.tahun && (
+                          <div className="flex items-center text-xs text-gray-500 pt-2">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {k.tahun}
+                          </div>
+                        )}
                       </Card>
                     ))}
                   </div>

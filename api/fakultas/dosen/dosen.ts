@@ -67,23 +67,23 @@ const DosenFakultas = ({
     },
 
     // ── CRUD data biografis dosen (riwayat karir/pendidikan, pengabdian, kekayaan intelektual) ──
-    createKeterangan: (dosenId: number, type: string, keterangan: string) => {
+    createKeterangan: (dosenId: number, type: string, data: Record<string, unknown>) => {
       const headers = config();
       return fetch(`${baseUrl}${dosenEndpoint}/${dosenId}/${type}`, {
         method: "POST",
         headers: headers,
-        body: JSON.stringify({ keterangan }),
+        body: JSON.stringify(data),
       })
         .then((response) => response.json())
         .catch((error) => { throw new Error(`Error creating ${type}: ${error.message}`); });
     },
 
-    updateKeterangan: (dosenId: number, type: string, itemId: number, keterangan: string) => {
+    updateKeterangan: (dosenId: number, type: string, itemId: number, data: Record<string, unknown>) => {
       const headers = config();
       return fetch(`${baseUrl}${dosenEndpoint}/${dosenId}/${type}/${itemId}`, {
         method: "PUT",
         headers: headers,
-        body: JSON.stringify({ keterangan }),
+        body: JSON.stringify(data),
       })
         .then((response) => response.json())
         .catch((error) => { throw new Error(`Error updating ${type}: ${error.message}`); });
