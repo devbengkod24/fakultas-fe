@@ -6,6 +6,7 @@ import {
   GraduationCap,
   BarChart3,
   RefreshCw,
+  User,
 } from "lucide-react";
 import withAuth from "../../hoc/withAuth";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -58,9 +59,9 @@ const sidebarData = {
 
   mahasiswa: [
     {
-      name: "Dashboard",
-      url: "/ews",
-      icon: Home,
+      name: "Profil EWS",
+      url: "/ews/profile",
+      icon: User,
     },
   ],
 };

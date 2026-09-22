@@ -206,7 +206,7 @@ const EwsProfileSection = ({ data, isLoading }: EwsProfileSectionProps) => {
                   {isEligible ? "ELIGIBLE" : "TIDAK ELIGIBLE"}
                 </p>
                 <Badge variant="secondary" className="text-[10px]">
-                  EWS: {ews.status.replace("_", " ")}
+                  EWS: {ews?.status ? ews.status.replace("_", " ") : "-"}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
