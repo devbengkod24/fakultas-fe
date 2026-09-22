@@ -3,7 +3,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Quote, Loader2, User } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 import AutoScroll from "embla-carousel-auto-scroll";
 import {
   Carousel,
@@ -124,9 +124,6 @@ export default function AlumniStoriesClient() {
 
                       {/* Bagian Teks (Corporate Elegant) */}
                       <div className="flex flex-col flex-grow p-4 md:p-6 lg:p-8 relative bg-white md:w-2/3">
-                        {/* Watermark Quote Background */}
-                        <Quote className="absolute top-4 left-4 w-12 h-12 md:w-16 md:h-16 text-slate-50 -rotate-12 z-0" />
-                        
                         <div className="relative z-10 flex flex-col h-full">
                           <p className="order-2 md:order-1 text-slate-700 text-sm md:text-base font-light leading-relaxed mb-0 md:mb-4 italic">
                             &quot;{item.kisah}&quot;
