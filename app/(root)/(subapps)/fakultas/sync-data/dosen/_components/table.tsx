@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import useSWR, { mutate } from "swr";
 import { toast } from "sonner";
-import { AlertCircle, CheckCircle2, RefreshCw, Users, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, Download, RefreshCw, Users, XCircle } from "lucide-react";
 
 import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
@@ -29,10 +29,64 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import type { SyncResult } from "@/api/fakultas-sync";
+import type { SyncResult, SyncErrorDetail } from "@/api/fakultas-sync";
 import type { Prodi } from "@/api/fakultas/prodi";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+// Kode dari fakultas-sync (klasifikasi by isinstance exception, lihat _classify_sync_error
+// di services/sync_dosen.py) -- kode yang gak ada di tabel ini (termasuk "unknown") fallback
+// ke `error.error` mentah, jadi gak pernah hilang, cuma belum secantik yang lain.
+const ERROR_CODE_LABELS: Record<string, string> = {
+  duplicate_nidn: "NIDN sudah dipakai dosen lain",
+  duplicate_npp: "NPP sudah terdaftar",
+  duplicate_email: "Email sudah dipakai akun lain",
+  duplicate_key: "Data duplikat di database",
+  email_kosong: "Email institusi & alternatif kosong",
+  npp_kosong: "NPP kosong di data sumber",
+  role_missing: "Role 'dosen' belum ada di sistem",
+};
+
+function formatSyncError(err: SyncErrorDetail): string {
+  return (err.code && ERROR_CODE_LABELS[err.code]) || err.error;
+}
+
+// Kegagalan TOTAL (fakultas-sync gak kesambung sama sekali) -- Laravel balikin pesan mentah
+// dari Guzzle/libcurl di `message`, bukan per-item kayak error_details. Pola "cURL error N"
+// stabil (bagian libcurl), aman diformat di sini tanpa perlu ubah backend.
+function formatSyncMessage(message: string): string {
+  if (message.includes("cURL error 7") || message.includes("Couldn't connect to server")) {
+    return "Gagal terhubung ke server sync (fakultas-sync). Pastikan service-nya sedang berjalan.";
+  }
+  if (message.includes("cURL error 28") || message.toLowerCase().includes("operation timed out")) {
+    return "Sinkronisasi terlalu lama dan berhenti (timeout). Coba sync per-prodi satu-satu, bukan Semua Prodi FIK sekaligus.";
+  }
+  if (message.startsWith("cURL error")) {
+    return "Gagal terhubung ke server sync. Coba lagi beberapa saat.";
+  }
+  return message;
+}
+
+// Sebelumnya biner (ada error sedikit pun langsung "Selesai dengan Error", padahal mayoritas
+// bisa aja sukses -- mis. 384/501). Sekarang 3 level: 0 error = berhasil penuh, ada yang
+// synced = sebagian berhasil (bukan kegagalan), 0 yang synced = gagal beneran.
+function getSyncStatusMeta(data: SyncResult | null, fallbackSuccess: boolean) {
+  if (!data) {
+    return fallbackSuccess
+      ? { title: "Sinkronisasi Berhasil", icon: "success" as const }
+      : { title: "Sinkronisasi Gagal", icon: "error" as const };
+  }
+  if (data.errors === 0) {
+    return { title: "Sinkronisasi Berhasil", icon: "success" as const };
+  }
+  if (data.total_synced === 0) {
+    return { title: "Sinkronisasi Gagal", icon: "error" as const };
+  }
+  return {
+    title: "Sinkronisasi Selesai — Sebagian Berhasil",
+    icon: "partial" as const,
+  };
+}
 
 function adaptSyncDosen(d: any): SyncDosen {
   const prodiHomebase =
@@ -51,8 +105,8 @@ function adaptSyncDosen(d: any): SyncDosen {
   };
 }
 
-const fetcher = (page: number, limit: number, search: string) =>
-  DosenFakultasService.getAll(page, limit, search);
+const fetcher = (page: number, limit: number, search: string, prodi: string) =>
+  DosenFakultasService.getAll(page, limit, search, prodi !== "all" ? prodi : undefined);
 
 export function TableSyncDosen() {
   const searchParams = useSearchParams();
@@ -61,6 +115,7 @@ export function TableSyncDosen() {
   const search = searchParams.get("search") || "";
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
+  const filterProdi = searchParams.get("prodi") || "all";
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
@@ -79,15 +134,26 @@ export function TableSyncDosen() {
     prodiName: "",
   });
 
-  const mutateKey = ["sync-dosen-list", page, limit, search];
+  const mutateKey = ["sync-dosen-list", page, limit, search, filterProdi];
 
   const {
     data: response,
     error,
     isLoading,
-  } = useSWR(mutateKey, () => fetcher(page, limit, search), {
+  } = useSWR(mutateKey, () => fetcher(page, limit, search, filterProdi), {
     dedupingInterval: 1000,
   });
+
+  const handleFilterProdiChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value !== "all") {
+      params.set("prodi", value);
+    } else {
+      params.delete("prodi");
+    }
+    params.set("page", "1");
+    router.push(`?${params.toString()}`);
+  };
 
   const { data: prodiResponse } = useSWR("prodi-list-fakultas", () =>
     ProdiFakultasService.getAll(1, 100)
@@ -117,7 +183,7 @@ export function TableSyncDosen() {
       setSyncResult({
         show: true,
         success: res?.success !== false,
-        message: res?.message ?? "Sync selesai",
+        message: formatSyncMessage(res?.message ?? "Sync selesai"),
         data: resultData ?? null,
         prodiName,
       });
@@ -148,14 +214,29 @@ export function TableSyncDosen() {
     <div className="w-full flex flex-col gap-3">
       <div className="flex flex-col sm:flex-row justify-between gap-3">
         <SearchControl placeholder="Cari nama dosen..." className="flex-1 max-w-md" />
-        <Button
-          onClick={() => setIsSyncDialogOpen(true)}
-          disabled={isSyncing}
-          className="bg-primary hover:bg-primary/90 text-white"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? "animate-spin" : ""}`} />
-          Sync Data
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Select value={filterProdi} onValueChange={handleFilterProdiChange}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Semua Prodi" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Prodi</SelectItem>
+              {prodiList.map((prodi) => (
+                <SelectItem key={prodi.id} value={String(prodi.id)}>
+                  {prodi.nama}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            onClick={() => setIsSyncDialogOpen(true)}
+            disabled={isSyncing}
+            className="bg-primary hover:bg-primary/90 text-white"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? "animate-spin" : ""}`} />
+            Sync Data
+          </Button>
+        </div>
       </div>
 
       {!isLoading && !hasData ? (
@@ -231,57 +312,76 @@ export function TableSyncDosen() {
         open={syncResult.show}
         onOpenChange={(open) => setSyncResult((prev) => ({ ...prev, show: open }))}
       >
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {syncResult.success ? (
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-              ) : (
-                <XCircle className="h-5 w-5 text-red-600" />
-              )}
-              {syncResult.success
-                ? "Sinkronisasi Berhasil"
-                : "Sinkronisasi Selesai dengan Error"}
-            </DialogTitle>
-            <DialogDescription>{syncResult.message}</DialogDescription>
+            {(() => {
+              const status = getSyncStatusMeta(syncResult.data, syncResult.success);
+              return (
+                <DialogTitle className="flex items-center gap-2">
+                  {status.icon === "success" && <CheckCircle2 className="h-5 w-5 text-blue-600" />}
+                  {status.icon === "partial" && <AlertCircle className="h-5 w-5 text-amber-500" />}
+                  {status.icon === "error" && <XCircle className="h-5 w-5 text-destructive" />}
+                  {status.title}
+                </DialogTitle>
+              );
+            })()}
+            {/* Pesan mentah cuma ditampilin kalau gak ada data (mis. gagal koneksi) --
+                kalau ada data, title + stat card di bawah udah cukup, gak perlu diulang. */}
+            {!syncResult.data && (
+              <DialogDescription>{syncResult.message}</DialogDescription>
+            )}
           </DialogHeader>
 
           {syncResult.data && (
             <div className="space-y-3">
-              <div className="rounded-lg border p-4 space-y-2">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Prodi: <span className="text-foreground font-semibold">{syncResult.prodiName}</span>
+              <div className="text-sm font-medium text-muted-foreground">
+                Prodi: <span className="text-foreground font-semibold">{syncResult.prodiName}</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-lg border border-border bg-muted p-3 text-center">
+                  <Download className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                  <div className="text-xl font-bold text-foreground">
+                    {syncResult.data.total_fetched}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Diambil</div>
                 </div>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-blue-600">
-                      {syncResult.data.total_fetched}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Diambil</div>
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-center">
+                  <CheckCircle2 className="h-4 w-4 mx-auto mb-1 text-blue-600" />
+                  <div className="text-xl font-bold text-blue-600">
+                    {syncResult.data.total_synced}
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">
-                      {syncResult.data.total_synced}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Berhasil</div>
+                  <div className="text-xs text-blue-600/80">Berhasil</div>
+                </div>
+                <div
+                  className={`rounded-lg border p-3 text-center ${
+                    syncResult.data.errors > 0 ? "border-destructive/30 bg-destructive/10" : "border-border bg-muted"
+                  }`}
+                >
+                  <XCircle
+                    className={`h-4 w-4 mx-auto mb-1 ${syncResult.data.errors > 0 ? "text-destructive" : "text-muted-foreground"}`}
+                  />
+                  <div className={`text-xl font-bold ${syncResult.data.errors > 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                    {syncResult.data.errors}
                   </div>
-                  <div>
-                    <div className={`text-2xl font-bold ${syncResult.data.errors > 0 ? "text-red-600" : "text-gray-400"}`}>
-                      {syncResult.data.errors}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Gagal</div>
+                  <div className={`text-xs ${syncResult.data.errors > 0 ? "text-destructive/80" : "text-muted-foreground"}`}>
+                    Gagal
                   </div>
                 </div>
               </div>
 
               {syncResult.data.error_details.length > 0 && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-                  <p className="text-sm font-medium text-red-800 mb-2">Detail Error:</p>
-                  <div className="max-h-40 overflow-y-auto space-y-1">
-                    {syncResult.data.error_details.map((err: any, idx: number) => (
-                      <p key={idx} className="text-xs text-red-700">
-                        <span className="font-mono">{err.item ?? "-"}</span>: {err.error}
-                      </p>
+                <div className="rounded-lg border p-3">
+                  <p className="text-sm font-medium mb-2 flex items-center gap-1.5 text-muted-foreground">
+                    <AlertCircle className="h-4 w-4" />
+                    Rincian ({syncResult.data.error_details.length})
+                  </p>
+                  <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
+                    {syncResult.data.error_details.map((err, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-xs rounded-md bg-muted/50 px-2.5 py-1.5">
+                        <span className="font-mono font-medium shrink-0">{err.item ?? "-"}</span>
+                        <span className="text-muted-foreground">{formatSyncError(err)}</span>
+                      </div>
                     ))}
                   </div>
                 </div>

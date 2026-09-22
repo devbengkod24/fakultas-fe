@@ -1,10 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+export type SyncErrorDetail = {
+  item: string | null;
+  error: string;
+  code?: string;
+};
+
 export type SyncResult = {
   total_fetched: number;
   total_synced: number;
   errors: number;
-  error_details: any[];
+  error_details: SyncErrorDetail[];
 };
 
 export type SyncResponse = {
