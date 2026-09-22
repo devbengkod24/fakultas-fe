@@ -172,6 +172,7 @@ const LogbookDetailClientPage = () => {
     mahasiswa_id: data.data.mahasiswa.id,
     name: data.data.mahasiswa.name,
     nim: data.data.mahasiswa.nim,
+    foto: data.data.mahasiswa.foto,
     dosen_name: data.data.dosen_pembimbing.name,
     totalLogbooks: data.data.logbook.total_bimbingan,
     bab_terakhir: data.data.logbook.bab_terakhir,

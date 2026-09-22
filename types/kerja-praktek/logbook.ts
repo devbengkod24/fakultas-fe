@@ -3,6 +3,7 @@ export interface Logbook {
   mahasiswa_id?: number;
   name?: string;
   nim?: string;
+  foto?: string;
   bab_terakhir?: number;
   total_bimbingan?: number;
   progress?: string; // For now string dulu, bram blm push staging
