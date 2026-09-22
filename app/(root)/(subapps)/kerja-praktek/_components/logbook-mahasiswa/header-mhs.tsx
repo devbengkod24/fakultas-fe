@@ -14,6 +14,7 @@ interface LogbookHeaderProps {
     mahasiswa_id?: number;
     name?: string;
     nim?: string;
+    foto?: string;
     dosen_name?: string;
     totalLogbooks?: number;
     bab_terakhir?: number;
@@ -65,7 +66,7 @@ export function LogbookHeaderMhs({
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex flex-col items-center gap-2">
             <Avatar className="h-24 w-24 border">
-              <AvatarImage src={""} alt={data.name} />
+              <AvatarImage src={data.foto || ""} alt={data.name} />
               <AvatarFallback className="text-2xl">
                 {(data.name ?? "")
                   .split(" ")

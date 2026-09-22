@@ -107,7 +107,7 @@ const LogbookCardMahasiswa = ({ logbooks, isLoading = false }: LogbookCardMahasi
                         <div className="flex items-center gap-4 mb-4">
                             <Avatar className="h-16 w-16 border">
                                 <AvatarImage
-                                    src={""}
+                                    src={student.foto || ""}
                                     alt={student.name}
                                 />
                                 <AvatarFallback className="text-lg">

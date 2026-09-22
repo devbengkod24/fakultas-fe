@@ -226,6 +226,7 @@ const LogbookBimbinganMahasiswa = () => {
     mahasiswa_id: logbookData?.data?.mahasiswa?.id,
     name: logbookData?.data?.mahasiswa?.name,
     nim: logbookData?.data?.mahasiswa?.nim,
+    foto: logbookData?.data?.mahasiswa?.foto,
     dosen_name: logbookData?.data?.dosen_pembimbing?.name,
     totalLogbooks: logbookData?.data?.logbook?.total_bimbingan || 0,
     bab_terakhir: logbookData?.data?.logbook?.bab_terakhir || 0,
