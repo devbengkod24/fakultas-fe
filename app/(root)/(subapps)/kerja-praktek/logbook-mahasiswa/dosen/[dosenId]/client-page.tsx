@@ -49,9 +49,10 @@ function LogbookDosenClientPage({ dosenId }: { dosenId: string }) {
   );
 
   const daftarMahasiswa = data?.data ?? [];
-  const totalPages = data?.meta?.pagination?.last_page ?? 1;
-  const totalData = data?.meta?.pagination?.total ?? 0;
-  const currentPage = data?.meta?.pagination?.current_page ?? 1;
+  const pagination = data?.meta?.pagination ?? data ?? {};
+  const totalPages = pagination?.last_page ?? 1;
+  const totalData = pagination?.total ?? 0;
+  const currentPage = pagination?.current_page ?? page;
 
   if (isLoading) {
     return <div className="text-center py-12">Memuat...</div>;
@@ -168,6 +169,7 @@ function LogbookDosenClientPage({ dosenId }: { dosenId: string }) {
           currentPage={currentPage}
           lastPage={totalPages}
           total={totalData}
+          limit={limit}
         />
       )}
     </div>

@@ -41,9 +41,10 @@ const LogbookMahasiswaKoordinator = () => {
   );
 
   const daftarDosen = data?.data ?? [];
-  const totalPages = data?.meta?.pagination?.last_page ?? 1;
-  const totalData = data?.meta?.pagination?.total ?? 0;
-  const currentPage = data?.meta?.pagination?.current_page ?? 1;
+  const pagination = data?.meta?.pagination ?? data ?? {};
+  const totalPages = pagination?.last_page ?? 1;
+  const totalData = pagination?.total ?? 0;
+  const currentPage = pagination?.current_page ?? page;
 
   return (
     <div>
@@ -94,7 +95,7 @@ const LogbookMahasiswaKoordinator = () => {
               <TableBody>
                 {daftarDosen.map((dosen: any, index: number) => (
                   <TableRow key={dosen.dosen_id}>
-                    <TableCell className="text-center">{index + 1}</TableCell>
+                    <TableCell className="text-center">{(currentPage - 1) * limit + index + 1}</TableCell>
                     <TableCell>
                       <p className="flex flex-col">
                         <span className="font-medium">{dosen.nama_dosen}</span>
@@ -150,6 +151,7 @@ const LogbookMahasiswaKoordinator = () => {
               currentPage={currentPage}
               lastPage={totalPages}
               total={totalData}
+              limit={limit}
             />
           )}
         </div>
