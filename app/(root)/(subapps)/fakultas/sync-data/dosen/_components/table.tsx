@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import type { SyncResult, SyncErrorDetail } from "@/api/fakultas-sync";
+import type { SyncResult, SyncErrorDetail, SyncWarningDetail } from "@/api/fakultas-sync";
 import type { Prodi } from "@/api/fakultas/prodi";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -45,10 +45,23 @@ const ERROR_CODE_LABELS: Record<string, string> = {
   email_kosong: "Email institusi & alternatif kosong",
   npp_kosong: "NPP kosong di data sumber",
   role_missing: "Role 'dosen' belum ada di sistem",
+  nidn_name_mismatch: "NIDN sudah dipakai dosen lain dengan nama berbeda",
+  ambiguous_name_match: "Nama cocok ke beberapa dosen, butuh review manual",
+  ambiguous_user_match: "Nama cocok ke beberapa akun, butuh review manual",
+  fetch_failed: "Gagal ambil data prodi ini dari API kampus, coba sync ulang",
+};
+
+// Kode buat peringatan non-blocking (bukan error) -- lihat SyncWarningDetail.
+const WARNING_CODE_LABELS: Record<string, string> = {
+  possible_duplicate_sibling: "Kemungkinan ada dosen lain dengan nama sama",
 };
 
 function formatSyncError(err: SyncErrorDetail): string {
   return (err.code && ERROR_CODE_LABELS[err.code]) || err.error;
+}
+
+function formatSyncWarning(w: SyncWarningDetail): string {
+  return (w.code && WARNING_CODE_LABELS[w.code]) || w.warning;
 }
 
 // Kegagalan TOTAL (fakultas-sync gak kesambung sama sekali) -- Laravel balikin pesan mentah
@@ -312,7 +325,7 @@ export function TableSyncDosen() {
         open={syncResult.show}
         onOpenChange={(open) => setSyncResult((prev) => ({ ...prev, show: open }))}
       >
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[480px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             {(() => {
               const status = getSyncStatusMeta(syncResult.data, syncResult.success);
@@ -376,11 +389,37 @@ export function TableSyncDosen() {
                     <AlertCircle className="h-4 w-4" />
                     Rincian ({syncResult.data.error_details.length})
                   </p>
-                  <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
+                  <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
                     {syncResult.data.error_details.map((err, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-xs rounded-md bg-muted/50 px-2.5 py-1.5">
-                        <span className="font-mono font-medium shrink-0">{err.item ?? "-"}</span>
-                        <span className="text-muted-foreground">{formatSyncError(err)}</span>
+                      <div key={idx} className="text-xs rounded-md bg-muted/50 px-2.5 py-1.5">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className="font-medium">{err.nama || "(nama tidak diketahui)"}</span>
+                          <span className="font-mono text-[10px] text-muted-foreground shrink-0">{err.item ?? "-"}</span>
+                        </div>
+                        <div className="text-muted-foreground">{formatSyncError(err)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Peringatan non-blocking -- item di sini TETAP sukses ter-sync (masuk
+                  total_synced), cuma perlu direview manual. Amber, bukan merah,
+                  biar gak keliatan seolah gagal kayak section Rincian di atas. */}
+              {(syncResult.data.warnings?.length ?? 0) > 0 && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                  <p className="text-sm font-medium mb-2 flex items-center gap-1.5 text-amber-700">
+                    <AlertCircle className="h-4 w-4" />
+                    Perlu Ditinjau ({syncResult.data.warnings!.length})
+                  </p>
+                  <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
+                    {syncResult.data.warnings!.map((w, idx) => (
+                      <div key={idx} className="text-xs rounded-md bg-white/60 px-2.5 py-1.5">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <span className="font-medium text-amber-900">{w.nama || "(nama tidak diketahui)"}</span>
+                          <span className="font-mono text-[10px] text-amber-700/70 shrink-0">{w.item ?? "-"}</span>
+                        </div>
+                        <div className="text-amber-700/90">{formatSyncWarning(w)}</div>
                       </div>
                     ))}
                   </div>
