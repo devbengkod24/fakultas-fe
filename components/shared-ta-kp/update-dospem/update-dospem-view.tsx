@@ -115,6 +115,12 @@ interface UpdateDospemViewProps {
   // Optional: isKonversi for KP
   isKonversi?: boolean;
   onIsKonversiChange?: (checked: boolean) => void;
+
+  // Optional: reset dospem (KP only, BE supports dosen_id null)
+  confirmResetOpen?: boolean;
+  onConfirmResetOpenChange?: (open: boolean) => void;
+  onRequestResetConfirm?: () => void;
+  onReset?: () => Promise<void>;
 }
 
 export function UpdateDospemView({
@@ -149,7 +155,12 @@ export function UpdateDospemView({
   getDosenLabel,
   isKonversi,
   onIsKonversiChange,
+  confirmResetOpen,
+  onConfirmResetOpenChange,
+  onRequestResetConfirm,
+  onReset,
 }: UpdateDospemViewProps) {
+  const showReset = !!onRequestResetConfirm;
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
       {/* Left: Mahasiswa list */}
@@ -400,20 +411,47 @@ export function UpdateDospemView({
                   </div>
                 )}
 
-                <Button
-                  onClick={onRequestConfirm}
-                  disabled={!dosenId || submitting}
-                  className="w-full"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    "Simpan Perubahan"
-                  )}
-                </Button>
+                {showReset ? (
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    <Button
+                      onClick={onRequestConfirm}
+                      disabled={!dosenId || submitting}
+                      className="w-full"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Menyimpan...
+                        </>
+                      ) : (
+                        "Simpan Perubahan"
+                      )}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={onRequestResetConfirm}
+                      disabled={submitting || !selected.dosen_name}
+                      className="w-full"
+                    >
+                      Reset Dospem
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={onRequestConfirm}
+                    disabled={!dosenId || submitting}
+                    className="w-full"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Menyimpan...
+                      </>
+                    ) : (
+                      "Simpan Perubahan"
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -530,6 +568,39 @@ export function UpdateDospemView({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {showReset && (
+        <AlertDialog
+          open={confirmResetOpen}
+          onOpenChange={onConfirmResetOpenChange}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Konfirmasi Reset Dospem</AlertDialogTitle>
+              <AlertDialogDescription>
+                Dosen pembimbing untuk{" "}
+                <span className="font-semibold text-foreground">
+                  {selected?.name}
+                </span>{" "}
+                akan direset. ACC dosen yang sudah ada akan dibatalkan.
+                Lanjutkan?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => {
+                  onConfirmResetOpenChange?.(false);
+                  void onReset?.();
+                }}
+              >
+                Ya, Reset
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }

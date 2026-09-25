@@ -24,6 +24,7 @@ export default function UpdateDosbimClientPage() {
   const [dosenSearch, setDosenSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [isKonversi, setIsKonversi] = useState(false);
 
   useEffect(() => {
@@ -138,6 +139,52 @@ export default function UpdateDosbimClientPage() {
     }
   };
 
+  const handleReset = async () => {
+    if (!selected?.project_id) {
+      toast.error("Project mahasiswa tidak ditemukan");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await MahasiswaService.updateDospem(
+        [selected.project_id],
+        null,
+        isKonversi,
+      );
+      handleToastResponse(res);
+
+      if (res?.success) {
+        const targetId = selected.project_id;
+        mutate(
+          ["kp-mhs-update-dospem", search, page],
+          (prev: any) =>
+            prev
+              ? {
+                  ...prev,
+                  data: prev.data.map((m: any) =>
+                    m.project_id === targetId
+                      ? { ...m, dosen_pembimbing: undefined, dosen_name: null }
+                      : m,
+                  ),
+                }
+              : prev,
+          { revalidate: true },
+        );
+        setSelected((prev) => (prev ? { ...prev, dosen_name: null } : prev));
+        if (selected?.mahasiswa_id) {
+          mutate(["kp-riwayat-dospem", selected.mahasiswa_id]);
+        }
+        setDosenId(null);
+        setIsKonversi(false);
+      }
+    } catch (e: unknown) {
+      toast.error("Gagal mereset dosen pembimbing");
+      console.error(e);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div>
       <DashboardHeader
@@ -186,6 +233,10 @@ export default function UpdateDosbimClientPage() {
         getDosenLabel={getDosenLabel}
         isKonversi={isKonversi}
         onIsKonversiChange={(checked) => setIsKonversi(checked === true)}
+        confirmResetOpen={confirmResetOpen}
+        onConfirmResetOpenChange={setConfirmResetOpen}
+        onRequestResetConfirm={() => setConfirmResetOpen(true)}
+        onReset={handleReset}
       />
     </div>
   );
